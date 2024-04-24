@@ -4,11 +4,19 @@
         <meta charset="utf-8" />
         <title>HTMXLLMChat</title>
         <link rel="stylesheet" href="./styles.css">
+        <script src="lib/htmx.min.js"></script>
     </head>
     <body>
         <div class="ui-container">
             <div class="threads-sidebar">
                 <p>Threads: </p>
+                <div
+                    class="threads-list"
+                    hx-get="http://127.0.0.1:8090/threads"
+                    hx-target="this"
+                    hx-trigger="load"
+                >
+                </div>
             </div>
             <div class="chat-container">
                 <div class="chat-window">
@@ -17,7 +25,12 @@
                 </div>
 
                 <div class="input-container">
-                    <input type="textarea" name="newMessage" class="message-input">
+                    <textarea
+                        type="textarea"
+                        name="newMessage"
+                        class="message-input"
+                        placeholder="Enter prompt..."
+                    ></textarea>
                     <button class="send-message-button">Send</Button>
                 </div>
             </div>
