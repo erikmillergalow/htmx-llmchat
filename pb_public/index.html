@@ -5,11 +5,31 @@
         <title>HTMXLLMChat</title>
         <link rel="stylesheet" href="./styles.css">
         <script src="lib/htmx.min.js"></script>
+        <script src="lib/htmx.ws.js"></script>
+        <script>
+document.addEventListener('DOMContentLoaded', (event) => {
+    document.body.addEventListener('htmx:ws:open', function(event) {
+        console.log('WebSocket connection opened');
+    });
+
+    document.body.addEventListener('htmx:ws:close', function(event) {
+        console.log('WebSocket connection closed');
+    });
+
+    document.body.addEventListener('htmx:ws:msg', function(event) {
+        console.log('Received message:', event.detail);
+    });
+});
+        </script>
     </head>
     <body>
         <div class="ui-container">
             <div class="threads-sidebar">
-                <p>Threads: </p>
+                <div class="sidebar-header">
+                    <svg class="menu-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M20 3H4c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h16c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM4 19V7h6v12H4zm8 0V7h8V5l.002 14H12z"></path><path d="M6 10h2v2H6zm0 4h2v2H6z"></path></svg>
+                    
+                    <svg class="new-thread-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M16 2H8C4.691 2 2 4.691 2 8v13a1 1 0 0 0 1 1h13c3.309 0 6-2.691 6-6V8c0-3.309-2.691-6-6-6zm4 14c0 2.206-1.794 4-4 4H4V8c0-2.206 1.794-4 4-4h8c2.206 0 4 1.794 4 4v8z"></path><path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4z"></path></svg>
+                </div>
                 <div
                     class="threads-list"
                     hx-get="http://127.0.0.1:8090/threads"
@@ -24,14 +44,22 @@
                     <!-- fill message history here, stream responses --> 
                 </div>
 
-                <div class="input-container">
-                    <textarea
-                        type="textarea"
-                        name="newMessage"
-                        class="message-input"
-                        placeholder="Enter prompt..."
-                    ></textarea>
-                    <button class="send-message-button">Send</Button>
+                <div class="input-container" hx-ext="ws" ws-connect="http://127.0.0.1:8090/ws">
+                    <form id="sender-form" class="send-message-form" ws-send>
+                        <input
+                            id="message-input"
+                            name="new-message"
+                            class="message-input"
+                            placeholder="Enter prompt..."
+                        ></input>
+                        <form
+                            name="newMessage"
+                            class="message-input"
+                            placeholder="Enter prompt..."
+                        ></form>
+                        <button type="submit" class="send-message-button">Send</Button>
+                    </form>
+
                 </div>
             </div>
         </div>
