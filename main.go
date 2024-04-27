@@ -13,6 +13,7 @@ import (
 
     "github.com/labstack/echo/v5"
     "github.com/gorilla/websocket"   
+    openai "github.com/sashabaranov/go-openai"
 
     "github.com/pocketbase/pocketbase"
     "github.com/pocketbase/pocketbase/apis"
@@ -25,6 +26,10 @@ var (
 
 func main() {
     app := pocketbase.New()
+
+    // this should be initialized when selecting a model
+    // may be initializing API like this, may be spinning up local model
+    chatgptClient := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 
     // serve static files from public dir
     app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
@@ -52,6 +57,10 @@ func main() {
             return nil               
         })
 
+        e.Router.POST("/new-thread", func(c echo.Context) error {
+            return nil            
+        })
+
         // websocket connection:
         e.Router.GET("/ws", func(c echo.Context) error {
             ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
@@ -69,7 +78,7 @@ func main() {
                     fmt.Println(err)
                 }
                 fmt.Printf("%s\n", msg)
-                
+
                 type HTMXSocketMsg struct {
                     Msg string `json:"new-message"`
                     Headers map[string]string `json:"HEADERS"`
@@ -82,9 +91,31 @@ func main() {
                 }
                 fmt.Println(htmxMsg)
 
+                // query model TODO: generalize this to all model types
+                resp, err := chatgptClient.CreateChatCompletion(
+                    context.Background(),
+                    openai.ChatCompletionRequest{
+                        Model: openai.GPT4,
+                        Messages: []openai.ChatCompletionMessage{
+                            {
+                                Role: openai.ChatMessageRoleUser,
+                                Content: htmxMsg.Msg,
+                            },
+                        },
+                    },
+                )
+
+                if err != nil {
+                    fmt.Printf("ChatCompletion error %v\n", err)
+                }
+
+                modelResponse := resp.Choices[0].Message.Content
+                fmt.Println(modelResponse)
+
                 // write
                 chatParams := templates.ChatMessageParams{
-                    Message: htmxMsg.Msg,
+                    ModelMessage: modelResponse,
+                    UserMessage: htmxMsg.Msg,
                 }
                 chatComponent := templates.ChatMessage(chatParams)
                 var htmlBuf bytes.Buffer

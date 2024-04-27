@@ -76,7 +76,6 @@ p, h1, h2, h3, h4, h5, h6 {
 }
 
 .threads-list {
-    margin-top: 0.5rem;
     height: 100%;
     overflow: scroll;
     scrollbar-width: thin;
@@ -119,7 +118,6 @@ p, h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     overflow: scroll;
     scrollbar-width: thin;
-    margin-top: 0.5rem;
 }
 
 .chat-message {
@@ -128,6 +126,15 @@ p, h1, h2, h3, h4, h5, h6 {
     border-radius: 5px;
     border-top: solid 1px #666;
     border-bottom: solid 1px #666;
+}
+
+.from-user {
+    background-color: #c0d0c7; 
+}
+
+.from-model {
+    background-color: #b2c1b8; 
+
 }
 
 .input-container {

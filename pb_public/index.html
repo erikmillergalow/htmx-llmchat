@@ -41,7 +41,7 @@
                     class="input-container"
                     hx-ext="ws"
                     ws-connect="http://127.0.0.1:8090/ws"
-                    hx-on:htmx:ws-after-message="document.querySelector('#sender-form').reset()"
+                    hx-on:htmx:ws-after-send="document.querySelector('#sender-form').reset()"
                 >
                     <form
                         id="sender-form"
