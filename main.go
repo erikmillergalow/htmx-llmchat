@@ -18,6 +18,9 @@ import (
     "github.com/pocketbase/pocketbase"
     "github.com/pocketbase/pocketbase/apis"
     "github.com/pocketbase/pocketbase/core"
+    "github.com/pocketbase/pocketbase/forms"
+    "github.com/pocketbase/pocketbase/models"
+
 )
 
 var (
@@ -37,17 +40,30 @@ func main() {
 
         // begin endpoints
         e.Router.GET("/threads", func(c echo.Context) error {
+            threads := []struct{
+                Id string `db:"id" json:"id"`
+                Title string `db:"thread_title" json:"thread_title"`
+                LastMessage string `db:"last_message" json:"last_message"`
+            }{}
+
+            app.Dao().DB().Select("*").From("chat_meta").All(&threads)
+
+            fmt.Println(threads)
+
+            var allEntryParams []templates.ThreadListEntryParams
+            for _, thread := range threads {
+                entryParams := templates.ThreadListEntryParams{
+                    Id: thread.Id,
+                    ThreadTitle: thread.Title,
+                    LastMessage: thread.LastMessage,
+                }
+                allEntryParams = append(allEntryParams, entryParams)
+                    
+            }
+
             c.Response().Writer.WriteHeader(200)
 
-            entryParams := templates.ThreadListEntryParams{
-                ThreadTitle: "Test title",
-                Model: "Llama 3",
-                StartTime: 111111111,
-                LastMessageTime: 444444444,
-                Tags: []string{"TagA", "TagB"},
-                LastMessage: "This is the last message in the chat and...",
-            }
-            threadListEntry := templates.ThreadListEntry(entryParams)
+            threadListEntry := templates.ThreadListEntry(allEntryParams)
 
             err := threadListEntry.Render(context.Background(), c.Response().Writer)
             if err != nil {
@@ -58,6 +74,21 @@ func main() {
         })
 
         e.Router.POST("/new-thread", func(c echo.Context) error {
+            threadsCollection, err := app.Dao().FindCollectionByNameOrId("chat_meta")
+            if err != nil {
+                fmt.Println("error reading threads DB")
+            }
+
+            newThreadRecord := models.NewRecord(threadsCollection)
+
+            form := forms.NewRecordUpsert(app, newThreadRecord)
+
+            fmt.Println(form)
+
+            if err := form.Submit(); err != nil {
+                fmt.Println("error creating new thread")
+            }
+
             return nil            
         })
 
@@ -108,6 +139,7 @@ func main() {
                 if err != nil {
                     fmt.Printf("ChatCompletion error %v\n", err)
                 }
+                // *** move above into own package
 
                 modelResponse := resp.Choices[0].Message.Content
                 fmt.Println(modelResponse)
