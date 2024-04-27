@@ -91,7 +91,6 @@ p, h1, h2, h3, h4, h5, h6 {
     grid-template-rows: 1fr 1fr 1fr;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     width: 100%;
-    background-color: #b1b7ba;
 }
 
 .chat-window {
@@ -103,6 +102,32 @@ p, h1, h2, h3, h4, h5, h6 {
     flex-direction: column;
     background-color: #b1c7ba;
     padding: 0.5rem;
+}
+
+.chat-title-header {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.thread-title {
+    margin-left: 0.5rem;
+}
+
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    overflow: scroll;
+    scrollbar-width: thin;
+    margin-top: 0.5rem;
+}
+
+.chat-message {
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border-radius: 5px;
+    border-top: solid 1px #666;
+    border-bottom: solid 1px #666;
 }
 
 .input-container {
