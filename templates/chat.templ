@@ -1,0 +1,26 @@
+package templates
+
+type ChatMessageParams struct {
+    Id string
+    ModelMessage string
+    UserMessage string
+//    Model string
+//    Timestamp int
+//    Tags []string
+    Sender string
+}
+
+templ ChatMessage(params ChatMessageParams) {
+    <div id="chat-messages" hx-swap-oob="beforeend" class="response-llm">
+        <div class="chat-message from-user">
+            { params.UserMessage }
+        </div>
+        <div id={ params.Id } class="chat-message from-model">
+        </div>
+    </div>
+}
+
+templ ChatStreamChunk(id string, chunk string) {
+    <div id={ id } hx-swap-oob="beforeend"> { chunk } </div>
+}
+

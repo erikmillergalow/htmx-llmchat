@@ -8,6 +8,8 @@ import (
     "net/http"
     "bytes"
     "encoding/json"
+    "errors"
+    "io"
 
     "github.com/erikmillergalow/htmx-llmchat/templates"
 
@@ -89,6 +91,8 @@ func main() {
                 fmt.Println("error creating new thread")
             }
 
+            fmt.Println(form)
+
             return nil            
         })
 
@@ -100,6 +104,11 @@ func main() {
                 fmt.Println(err)
             }
             defer ws.Close()
+
+            chatCollection, err := app.Dao().FindCollectionByNameOrId("chat")
+            if err != nil {
+                return err
+            }
 
             for {
                 // read
@@ -122,34 +131,39 @@ func main() {
                 }
                 fmt.Println(htmxMsg)
 
-                // query model TODO: generalize this to all model types
-                resp, err := chatgptClient.CreateChatCompletion(
-                    context.Background(),
-                    openai.ChatCompletionRequest{
-                        Model: openai.GPT4,
-                        Messages: []openai.ChatCompletionMessage{
-                            {
-                                Role: openai.ChatMessageRoleUser,
-                                Content: htmxMsg.Msg,
-                            },
-                        },
-                    },
-                )
+                // create message and response upserts
+                requestRecord := models.NewRecord(chatCollection)
+                form := forms.NewRecordUpsert(app, requestRecord)
+                
+                form.LoadData(map[string]any{
+                    "message": htmxMsg.Msg,
+                    "sender": "human",
+                })
 
-                if err != nil {
-                    fmt.Printf("ChatCompletion error %v\n", err)
+                if err := form.Submit(); err != nil {
+                    fmt.Printf("Failed to submit user message to chat DB: %v\n")
                 }
-                // *** move above into own package
+                // initialize new record for model, load data nd submit at end
+                modelRecord := models.NewRecord(chatCollection)
+                modelForm := forms.NewRecordUpsert(app, modelRecord)
 
-                modelResponse := resp.Choices[0].Message.Content
-                fmt.Println(modelResponse)
+                modelForm.LoadData(map[string]any{
+                    "message": "",
+                    "sender": "model",
+                })
 
-                // write
+                if err := modelForm.Submit(); err != nil {
+                    fmt.Printf("Failed to initialize model message in chat DB: %v\n")
+                }
+
+                // send the initial response skeleton
                 chatParams := templates.ChatMessageParams{
-                    ModelMessage: modelResponse,
+                    Id: modelRecord.Id,
                     UserMessage: htmxMsg.Msg,
                 }
                 chatComponent := templates.ChatMessage(chatParams)
+
+                // create ws write function to handle these
                 var htmlBuf bytes.Buffer
                 err = chatComponent.Render(context.Background(), &htmlBuf)
                 if err != nil {
@@ -162,6 +176,75 @@ func main() {
                     fmt.Println("socket write failure")
                     fmt.Println(err)
                 }
+
+                // begin OpenAI specific request
+
+                req := openai.ChatCompletionRequest{
+                    Model: openai.GPT4,
+                    MaxTokens: 20,
+                    Messages: []openai.ChatCompletionMessage{
+                        {
+                            Role: openai.ChatMessageRoleUser,
+                            Content: htmxMsg.Msg,
+                        },
+                    },
+                    Stream: true,
+                }
+                stream, err := chatgptClient.CreateChatCompletionStream(context.Background(), req)
+                if err != nil {
+                    fmt.Printf("ChatCompletionStream error: %v\n", err)
+                }
+                defer stream.Close()
+
+                fmt.Printf("Stream response: ")
+               
+                
+                fullResponse := "" 
+                for {
+                    response, err := stream.Recv()
+                    if errors.Is(err, io.EOF) {
+                        // save response to DB here?
+                        fmt.Println("\nStream finished")
+                        break;
+                    }
+
+                    if err != nil {
+                        fmt.Printf("\nStream error: %v\n", err)
+                    }
+                    fmt.Printf(response.Choices[0].Delta.Content)
+
+                    fullResponse += response.Choices[0].Delta.Content
+                    
+                    responseChunkComponent := templates.ChatStreamChunk(modelRecord.Id, response.Choices[0].Delta.Content)
+                    
+                    var htmlBuf bytes.Buffer
+
+                    err = responseChunkComponent.Render(context.Background(), &htmlBuf)
+                    if err != nil {
+                        fmt.Println("templ stream chunk render error")
+                        fmt.Println(err)
+                    }
+                    htmlStr := htmlBuf.String()
+                    fmt.Println(htmlStr)
+                    err = ws.WriteMessage(websocket.TextMessage, []byte(htmlStr))
+                    if err != nil {
+                        fmt.Println("socket write failure")
+                        fmt.Println(err)
+                    }
+                }
+
+                // *** move above into own package
+
+                // record model message in DB
+                modelForm.LoadData(map[string]any{
+                    "message": fullResponse,
+                    "sender": "model",
+                })
+
+                if err := modelForm.Submit(); err != nil {
+                    fmt.Printf("Failed to submit model message to chat DB: %v\n")
+                }
+
             }
         })
 

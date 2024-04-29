@@ -1,0 +1,37 @@
+package templates
+
+import (
+    "strconv"
+)
+
+type ThreadListEntryParams struct {
+    Id string
+    ThreadTitle string
+    Model string
+    StartTime int
+    LastMessageTime int
+    LastMessage string
+    Tags []string
+}
+
+templ ThreadListEntry(paramsList []ThreadListEntryParams) {
+    for _, params := range paramsList {
+        <div class="thread-list-entry">
+            <h2 class="thread-entry-title">{ params.ThreadTitle }</h2>
+            <p class="thread-entry-model"> { params.Model } </p>
+            <p class="thread-entry-message"> { params.LastMessage } </p>
+            <div class="dual-timestamps-container">
+                <p class="timestamp start"> { strconv.Itoa(params.StartTime) } </p>
+                <p class="timestamp end"> { strconv.Itoa(params.LastMessageTime) } </p>     
+            </div>
+
+            <div class="tags-container">
+                for _, tag := range params.Tags {
+                    <p class="tag"> { tag } </p>
+                }
+                <p class="tag">tag +</p>
+            </div>
+
+        </div> 
+    }
+}
