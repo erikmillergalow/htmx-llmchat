@@ -24,13 +24,14 @@ templ ThreadListEntry(paramsList []ThreadListEntryParams) {
             hx-get={ "/get-thread/" + params.Id }
             hx-trigger="click"
             hx-target="#chat-messages"
+            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\""}
         >
             <h2 class="thread-entry-title">{ params.Title }</h2>
             <p class="thread-entry-model"> { params.Model } </p>
             <p class="thread-entry-message"> { params.LastMessage } </p>
             <div class="dual-timestamps-container">
-                <p class="timestamp start"> { types.DateTime.String(params.Created) } </p>
-                <p class="timestamp end"> { types.DateTime.String(params.LastMessageTimestamp) } </p>     
+                <p class="timestamp start">Created at: { types.DateTime.String(params.Created)[:16] } </p>
+                <p class="timestamp end">{ types.DateTime.String(params.LastMessageTimestamp) } </p>     
             </div>
 
             <div class="tags-container">
@@ -39,7 +40,6 @@ templ ThreadListEntry(paramsList []ThreadListEntryParams) {
                 }
                 <p class="tag">tag +</p>
             </div>
-
         </div> 
     }
 }
