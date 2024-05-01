@@ -24,3 +24,27 @@ templ ChatStreamChunk(id string, chunk string) {
     <div id={ id } hx-swap-oob="beforeend"> { chunk } </div>
 }
 
+type LoadedMessageParams struct {
+    Id string `db:"id" json:"id"`
+    Message string `db:"message" json:"message"`
+//    Model string 
+//    Timestamp int
+//    Tags []string
+    Sender string `db:"sender" json:"sender"`
+}
+
+templ LoadedThread(messages []LoadedMessageParams) {
+    <div id="chat-messages" class="response-llm">
+       for _, message := range messages {
+           if (message.Sender == "human") {
+                <div class="chat-message from-user">
+                    { message.Message }
+                </div>
+           } else if (message.Sender == "model") {
+                <div id={ message.Id } class="chat-message from-model">
+                    { message.Message }
+                </div>
+           }
+       }
+    </div>
+}

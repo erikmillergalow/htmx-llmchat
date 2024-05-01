@@ -1,32 +1,40 @@
 package templates
 
 import (
-    "strconv"
+    "strings"
+    
+    "github.com/pocketbase/pocketbase/tools/types"
 )
 
 type ThreadListEntryParams struct {
-    Id string
-    ThreadTitle string
-    Model string
-    StartTime int
-    LastMessageTime int
-    LastMessage string
-    Tags []string
+    Id string `db:"id" json:"id"`
+    Title string `db:"thread_title" json:"thread_title"`
+    LastMessage string `db:"last_message" json:"last_message"`
+    LastMessageTimestamp types.DateTime `db:"last_message_timestamp" json:"last_message_timestamp"`
+    Created types.DateTime `db:"created" json:"created"`  
+    Tags string `db:"tags" json:"tags"`
+    Model string `db:"model" json:"model"`
 }
 
 templ ThreadListEntry(paramsList []ThreadListEntryParams) {
     for _, params := range paramsList {
-        <div class="thread-list-entry">
-            <h2 class="thread-entry-title">{ params.ThreadTitle }</h2>
+        <div 
+            id={ params.Id }
+            class="thread-list-entry"
+            hx-get={ "/get-thread/" + params.Id }
+            hx-trigger="click"
+            hx-target="#chat-messages"
+        >
+            <h2 class="thread-entry-title">{ params.Title }</h2>
             <p class="thread-entry-model"> { params.Model } </p>
             <p class="thread-entry-message"> { params.LastMessage } </p>
             <div class="dual-timestamps-container">
-                <p class="timestamp start"> { strconv.Itoa(params.StartTime) } </p>
-                <p class="timestamp end"> { strconv.Itoa(params.LastMessageTime) } </p>     
+                <p class="timestamp start"> { types.DateTime.String(params.Created) } </p>
+                <p class="timestamp end"> { types.DateTime.String(params.LastMessageTimestamp) } </p>     
             </div>
 
             <div class="tags-container">
-                for _, tag := range params.Tags {
+                for _, tag := range strings.Split(params.Tags, "|") {
                     <p class="tag"> { tag } </p>
                 }
                 <p class="tag">tag +</p>
