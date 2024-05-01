@@ -44,13 +44,10 @@ func main() {
         // begin endpoints
         e.Router.GET("/threads", func(c echo.Context) error {
             var threads []templates.ThreadListEntryParams
-
             app.Dao().DB().Select("*").From("chat_meta").All(&threads)
 
             c.Response().Writer.WriteHeader(200)
-
-            threadListEntry := templates.ThreadListEntry(threads)
-
+            threadListEntry := templates.ThreadListEntries(threads)
             err := threadListEntry.Render(context.Background(), c.Response().Writer)
             if err != nil {
                 return c.String(http.StatusInternalServerError, "failed to render thread list repsonse")
@@ -59,56 +56,65 @@ func main() {
             return nil               
         })
 
-        e.Router.GET("/get-thread/:id", func(c echo.Context) error {
+        e.Router.GET("/thread/:id", func(c echo.Context) error {
             threadId := c.PathParam("id")
 
-            fmt.Println(threadId)
-            fmt.Println(c)
-
             var messages []templates.LoadedMessageParams
-
             app.Dao().DB().
                 Select("*").
                 From("chat").
                 Where(dbx.NewExp("thread_id = {:id}", dbx.Params{ "id": threadId })).
                 All(&messages)
 
-            fmt.Println(messages)
-
             c.Response().Writer.WriteHeader(200)
-
             loadedChat := templates.LoadedThread(messages)
-            fmt.Println(loadedChat)
-
             err := loadedChat.Render(context.Background(), c.Response().Writer)
             if err != nil {
-                return c.String(http.StatusInternalServerError, "failed to render loaded chat repsonse")
+                return c.String(http.StatusInternalServerError, "failed to render loaded chat response")
             }
 
             return nil               
         })
 
-        e.Router.POST("/new-thread", func(c echo.Context) error {
+        e.Router.POST("/thread/create", func(c echo.Context) error {
             threadsCollection, err := app.Dao().FindCollectionByNameOrId("chat_meta")
             if err != nil {
                 fmt.Println("error reading threads DB")
             }
 
             newThreadRecord := models.NewRecord(threadsCollection)
-
             form := forms.NewRecordUpsert(app, newThreadRecord)
 
             fmt.Println(form)
 
+            form.LoadData(map[string]any{
+                "last_message": "Empty chat...",
+                "last_message_timestamp": newThreadRecord.Created,
+            })
+
             if err := form.Submit(); err != nil {
                 fmt.Println("error creating new thread")
+                return c.String(http.StatusInternalServerError, "failed to create new thread DB entry")
             }
 
+            newThreadRecord.Set("thread_title", newThreadRecord.Id)
+
+            threadParams := templates.ThreadListEntryParams{
+                Id: newThreadRecord.Id,
+                Title: newThreadRecord.Id,
+                LastMessage: "Empty chat...",
+                LastMessageTimestamp: newThreadRecord.Created,
+                Created: newThreadRecord.Created,
+            }
             // return thread, target threads-list, swap beforestart (or whatever the top is
-
-            fmt.Println(form)
-
-            return nil            
+            c.Response().Writer.WriteHeader(200)
+            newThread := templates.NewThreadListEntry(threadParams)
+            err = newThread.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                fmt.Printf("Error rendering new thread: %v\n", err)
+                return c.String(http.StatusInternalServerError, "failed to render new thread DB entry")
+            }
+            return nil
         })
 
         // websocket connection:

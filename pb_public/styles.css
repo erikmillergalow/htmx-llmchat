@@ -200,27 +200,30 @@ p, h1, h2, h3, h4, h5, h6 {
 }
 
 .thread-entry-message {
+    font-size: 13px;
     margin-top: 0.5rem;
 }
 
 .dual-timestamps-container {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     justify-content: space-between;
     width: 100%;
     margin-top: 0.5rem;
 }
 
 .timestamp {
-    font-size: 0.75rem;
+    font-size: 11px;
+    color: #393939;
+    width: 100%;
 }
 
 .start {
-    color: aqua;
+    color: #393939;
 }
 
 .end {
-    color: green;
+    color: #393939;
 }
 
 .tags-container {

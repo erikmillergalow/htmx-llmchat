@@ -16,30 +16,48 @@ type ThreadListEntryParams struct {
     Model string `db:"model" json:"model"`
 }
 
-templ ThreadListEntry(paramsList []ThreadListEntryParams) {
-    for _, params := range paramsList {
-        <div 
-            id={ params.Id }
-            class="thread-list-entry"
-            hx-get={ "/get-thread/" + params.Id }
-            hx-trigger="click"
-            hx-target="#chat-messages"
-            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\""}
-        >
-            <h2 class="thread-entry-title">{ params.Title }</h2>
-            <p class="thread-entry-model"> { params.Model } </p>
-            <p class="thread-entry-message"> { params.LastMessage } </p>
-            <div class="dual-timestamps-container">
-                <p class="timestamp start">Created at: { types.DateTime.String(params.Created)[:16] } </p>
-                <p class="timestamp end">{ types.DateTime.String(params.LastMessageTimestamp) } </p>     
-            </div>
+templ ThreadListEntry(params ThreadListEntryParams, isNew bool) {
+    <div 
+        id={ params.Id }
+        class="thread-list-entry"
+        hx-get={ "/thread/" + params.Id }
+        hx-trigger="click"
+        hx-target="#chat-messages"
+        if isNew {
+            _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
+        } else {
+            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
+        }
+    >
+        <h3 class="thread-entry-title">{ params.Title }</h3>
+        <p class="thread-entry-model"> { params.Model } </p>
+        <p class="thread-entry-message"> { params.LastMessage } </p>
+        <div class="dual-timestamps-container">
+            <p class="timestamp start">Created at: { types.DateTime.String(params.Created) } </p>
+            <p class="timestamp end">Last message: { types.DateTime.String(params.LastMessageTimestamp) } </p>     
+        </div>
 
-            <div class="tags-container">
-                for _, tag := range strings.Split(params.Tags, "|") {
-                    <p class="tag"> { tag } </p>
-                }
-                <p class="tag">tag +</p>
-            </div>
-        </div> 
+        <div class="tags-container">
+            for _, tag := range strings.Split(params.Tags, "|") {
+                <p class="tag"> { tag } </p>
+            }
+            <p class="tag">tag +</p>
+        </div>
+    </div> 
+}
+
+templ NewThreadListEntry(params ThreadListEntryParams) {
+    <div
+        id="threads-list"
+        hx-swap-oob="afterbegin"
+        _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
+    >
+        @ThreadListEntry(params, true)
+    </div> 
+}
+
+templ ThreadListEntries(paramsList []ThreadListEntryParams) {
+    for _, params := range paramsList {
+        @ThreadListEntry(params, false)
     }
 }
