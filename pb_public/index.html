@@ -7,6 +7,7 @@
         <script src="lib/htmx.min.js"></script>
         <script src="lib/htmx.ws.js"></script>
         <script src="lib/_hyperscript.min.js"></script>
+
     </head>
     <body>
         <div class="ui-container">
@@ -79,4 +80,12 @@
             </div>
         </div>
     </body>
+    <script>
+        document.addEventListener("htmx:wsAfterMessage", e => {
+            const messagesDiv = document.getElementById("chat-messages");
+
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        })
+    </script>
+
 </html>

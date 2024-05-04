@@ -11,17 +11,17 @@ type ChatMessageParams struct {
 }
 
 templ ChatMessage(params ChatMessageParams) {
-    <div id="chat-messages" hx-swap-oob="beforeend" class="response-llm">
+    <div id="chat-messages" hx-swap-oob="beforeend">
         <div class="chat-message from-user">
             { params.UserMessage }
         </div>
-        <div id={ params.Id } class="chat-message from-model">
+        <div id={ "response-" + params.Id } class="chat-message from-model">
         </div>
     </div>
 }
 
 templ ChatStreamChunk(id string, chunk string) {
-    <div id={ id } hx-swap-oob="beforeend"> { chunk } </div>
+    <div id={"response-" + id } hx-swap-oob="beforeend"> { chunk } </div>
 }
 
 type LoadedMessageParams struct {
@@ -34,17 +34,15 @@ type LoadedMessageParams struct {
 }
 
 templ LoadedThread(messages []LoadedMessageParams) {
-    <div id="chat-messages" class="response-llm">
-       for _, message := range messages {
-           if (message.Sender == "human") {
-                <div class="chat-message from-user">
-                    { message.Message }
-                </div>
-           } else if (message.Sender == "model") {
-                <div id={ message.Id } class="chat-message from-model">
-                    { message.Message }
-                </div>
-           }
+   for _, message := range messages {
+       if (message.Sender == "human") {
+            <div class="chat-message from-user">
+                { message.Message }
+            </div>
+       } else if (message.Sender == "model") {
+            <div id={ message.Id } class="chat-message from-model">
+                { message.Message }
+            </div>
        }
-    </div>
+   }
 }

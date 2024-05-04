@@ -75,12 +75,6 @@ p, h1, h2, h3, h4, h5, h6 {
     background-color: #9a9fa6;
 }
 
-.threads-list {
-    height: 100%;
-    overflow: scroll;
-    scrollbar-width: thin;
-}
-
 .chat-container {
     grid-row-start: 1;
     grid-row-end: 3;
@@ -178,6 +172,12 @@ p, h1, h2, h3, h4, h5, h6 {
     background-color: 'green';
 }
 
+.threads-list {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+    scrollbar-width: thin;
+}
 
 .thread-list-entry {
     padding: 0.5rem;
@@ -229,7 +229,6 @@ p, h1, h2, h3, h4, h5, h6 {
 .tags-container {
     display: flex;
     flex-direction: row;
-    justify-content: flex-end;
     width: 100%; 
     margin-top: 0.5rem;
 }
@@ -239,7 +238,7 @@ p, h1, h2, h3, h4, h5, h6 {
     padding: 0.25rem;
     padding-left: 0.75rem;
     padding-right: 0.75rem;
-    margin-left: 0.5rem;
+    margin-right: 0.5rem;
     background-color: gray;
     border-radius: 2rem;
 }

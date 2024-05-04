@@ -16,6 +16,41 @@ type ThreadListEntryParams struct {
     Model string `db:"model" json:"model"`
 }
 
+templ ThreadTitleEditor(id string) {
+    <input
+        hx-put={ "/thread/title/" + id }
+        hx-trigger="blur" 
+        hx-target="this"
+        hx-swap="outerHTML"
+        class="title-edit"
+        type="text"
+        placeholder="Enter title..."
+        name="title"
+        autofocus
+    ></input>
+}
+
+templ ThreadTitle(id string, title string) {
+    <div
+            hx-trigger="click consume"
+            hx-get={ "/thread/title/" + id }
+            hx-target="this"
+            hx-swap="outerHTML"
+    >
+        <h3 class="thread-entry-title">
+            { title }
+        </h3>
+    </div>
+}
+
+templ OobTextSwap(id string, value string) {
+   <div id={ id } hx-swap-oob="innerHTML">Updated at: { value }</div>
+}
+
+templ LastMessageTimestamp(id string, time types.DateTime) {
+   <div id={ "last-updated-" + id } hx-swap-oob="innerHTML">Updated at: { types.DateTime.String(time) }</div>
+}
+
 templ ThreadListEntry(params ThreadListEntryParams, isNew bool) {
     <div 
         id={ params.Id }
@@ -26,22 +61,25 @@ templ ThreadListEntry(params ThreadListEntryParams, isNew bool) {
         if isNew {
             _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
         } else {
-            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
+            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Title + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
         }
     >
-        <h3 class="thread-entry-title">{ params.Title }</h3>
+
+        @ThreadTitle(params.Id, params.Title)
         <p class="thread-entry-model"> { params.Model } </p>
-        <p class="thread-entry-message"> { params.LastMessage } </p>
+        <!-- <p class="thread-entry-message"> { params.LastMessage } </p> -->
         <div class="dual-timestamps-container">
             <p class="timestamp start">Created at: { types.DateTime.String(params.Created) } </p>
-            <p class="timestamp end">Last message: { types.DateTime.String(params.LastMessageTimestamp) } </p>     
+            <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>     
         </div>
 
-        <div class="tags-container">
-            for _, tag := range strings.Split(params.Tags, "|") {
-                <p class="tag"> { tag } </p>
-            }
+        <div id="tags" class="tags-container">
             <p class="tag">tag +</p>
+            for _, tag := range strings.Split(params.Tags, "|") {
+                if (tag != "") {
+                    <p class="tag"> { tag } </p>
+                }
+            }
         </div>
     </div> 
 }

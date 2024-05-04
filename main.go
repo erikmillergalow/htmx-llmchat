@@ -22,8 +22,8 @@ import (
     "github.com/pocketbase/pocketbase/core"
     "github.com/pocketbase/pocketbase/forms"
     "github.com/pocketbase/pocketbase/models"
+    "github.com/pocketbase/pocketbase/tools/types"
     "github.com/pocketbase/dbx"
-
 )
 
 var (
@@ -36,6 +36,9 @@ func main() {
     // this should be initialized when selecting a model
     // may be initializing API like this, may be spinning up local model
     chatgptClient := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+//  config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
+//  config.BaseURL = "http://127.0.0.1:8080"
+//  chatgptClient := openai.NewClientWithConfig(config)
 
     // serve static files from public dir
     app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
@@ -44,7 +47,7 @@ func main() {
         // begin endpoints
         e.Router.GET("/threads", func(c echo.Context) error {
             var threads []templates.ThreadListEntryParams
-            app.Dao().DB().Select("*").From("chat_meta").All(&threads)
+            app.Dao().DB().Select("*").From("chat_meta").OrderBy("created DESC").All(&threads)
 
             c.Response().Writer.WriteHeader(200)
             threadListEntry := templates.ThreadListEntries(threads)
@@ -57,6 +60,7 @@ func main() {
         })
 
         e.Router.GET("/thread/:id", func(c echo.Context) error {
+            fmt.Println("load thread")
             threadId := c.PathParam("id")
 
             var messages []templates.LoadedMessageParams
@@ -77,6 +81,7 @@ func main() {
         })
 
         e.Router.POST("/thread/create", func(c echo.Context) error {
+            fmt.Println("new thread")
             threadsCollection, err := app.Dao().FindCollectionByNameOrId("chat_meta")
             if err != nil {
                 fmt.Println("error reading threads DB")
@@ -98,6 +103,10 @@ func main() {
             }
 
             newThreadRecord.Set("thread_title", newThreadRecord.Id)
+            if err := app.Dao().SaveRecord(newThreadRecord); err != nil {
+                fmt.Println("error creating new thread")
+                return c.String(http.StatusInternalServerError, "failed to set thread title to record ID")
+            }
 
             threadParams := templates.ThreadListEntryParams{
                 Id: newThreadRecord.Id,
@@ -117,8 +126,54 @@ func main() {
             return nil
         })
 
+        e.Router.GET("/thread/title/:id", func(c echo.Context) error {
+            fmt.Println("edit title")
+
+            id := c.PathParam("id")
+
+            c.Response().Writer.WriteHeader(200)
+            titleEditor := templates.ThreadTitleEditor(id)
+            err := titleEditor.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render title editor")
+            }
+
+            return nil               
+        })
+
+        e.Router.PUT("/thread/title/:id", func(c echo.Context) error {
+            fmt.Println("updating thread title")
+            
+            id := c.PathParam("id")
+
+            data := apis.RequestInfo(c).Data
+            title := data["title"].(string)
+
+            idRecord, err := app.Dao().FindRecordById("chat_meta", id)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to find thread record")
+            }
+            if title != "" {
+                idRecord.Set("thread_title", title)
+                if err := app.Dao().SaveRecord(idRecord); err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to update thread title record") 
+                }
+            } else {
+                title = idRecord.GetString("thread_title")
+            }
+            threadTitle := templates.ThreadTitle(id, title)
+            err = threadTitle.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render thread title")
+            }
+            
+
+            return nil
+        })
+
         // websocket connection:
         e.Router.GET("/ws", func(c echo.Context) error {
+            fmt.Println("websocket triggered")
             ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
             if err != nil {
                 fmt.Println("websocket upgrade failed")
@@ -138,20 +193,21 @@ func main() {
                 if err != nil {
                     fmt.Println("socket read failure")
                     fmt.Println(err)
-                    ws.Close()
+                    return err
                 }
                 fmt.Printf("%s\n", msg)
 
                 type HTMXSocketMsg struct {
-                    Msg string `json:"new-message"`
                     Headers map[string]string `json:"HEADERS"`
+                    Msg string `json:"new-message"`
+                    ThreadId string `json:"thread-id-chat"` 
                 }
                 var htmxMsg HTMXSocketMsg
                 err = json.Unmarshal(msg, &htmxMsg)
                 if err != nil {
                     fmt.Println("error parsing message")
                     fmt.Println(err)
-                    ws.Close()
+                    return err
                 }
                 fmt.Println(htmxMsg)
 
@@ -162,28 +218,28 @@ func main() {
                     form := forms.NewRecordUpsert(app, requestRecord)
                     
                     form.LoadData(map[string]any{
-                        "thread_id": "5n5l3bxua6nlas4",
+                        "thread_id": htmxMsg.ThreadId,
                         "message": htmxMsg.Msg,
                         "sender": "human",
                     })
 
                     if err := form.Submit(); err != nil {
-                        fmt.Printf("Failed to submit user message to chat DB: %v\n")
-                        ws.Close()
+                        fmt.Printf("Failed to submit user message to chat DB: %v\n", err)
+                        return err
                     }
                     // initialize new record for model, load data nd submit at end
                     modelRecord := models.NewRecord(chatCollection)
                     modelForm := forms.NewRecordUpsert(app, modelRecord)
 
                     modelForm.LoadData(map[string]any{
-                        "thread_id": "5n5l3bxua6nlas4",
+                        "thread_id": htmxMsg.ThreadId,
                         "message": "",
                         "sender": "model",
                     })
 
                     if err := modelForm.Submit(); err != nil {
                         fmt.Printf("Failed to initialize model message in chat DB: %v\n", err)
-                        ws.Close()
+                        return err
                     }
 
                     // send the initial response skeleton
@@ -202,6 +258,7 @@ func main() {
                         return err
                     }
                     htmlStr := htmlBuf.String()
+                    fmt.Printf("Initial chat receptacle: %v\n", htmlStr)
                     err = ws.WriteMessage(websocket.TextMessage, []byte(htmlStr))
                     if err != nil {
                         fmt.Println("socket write failure")
@@ -213,11 +270,12 @@ func main() {
 
                     req := openai.ChatCompletionRequest{
                         Model: openai.GPT4,
-                        MaxTokens: 20,
+                        // MaxTokens: 20,
                         Messages: []openai.ChatCompletionMessage{
                             {
                                 Role: openai.ChatMessageRoleUser,
                                 Content: htmxMsg.Msg,
+                                //Content: "<|im_start|>" + htmxMsg.Msg + "<|im_end|>",
                             },
                         },
                         Stream: true,
@@ -236,13 +294,13 @@ func main() {
                     for {
                         response, err := stream.Recv()
                         if errors.Is(err, io.EOF) {
-                            // save response to DB here?
                             fmt.Println("\nStream finished")
                             break;
                         }
 
                         if err != nil {
                             fmt.Printf("\nStream error: %v\n", err)
+                            return err
                         }
                         fmt.Printf(response.Choices[0].Delta.Content)
 
@@ -256,6 +314,7 @@ func main() {
                         if err != nil {
                             fmt.Println("templ stream chunk render error")
                             fmt.Println(err)
+                            return err
                         }
                         htmlStr := htmlBuf.String()
                         fmt.Println(htmlStr)
@@ -263,6 +322,7 @@ func main() {
                         if err != nil {
                             fmt.Println("socket write failure")
                             fmt.Println(err)
+                            return err
                         }
                     }
 
@@ -270,12 +330,51 @@ func main() {
 
                     // record model message in DB
                     modelForm.LoadData(map[string]any{
+                        "thread_id": htmxMsg.ThreadId,
                         "message": fullResponse,
                         "sender": "model",
                     })
 
                     if err := modelForm.Submit(); err != nil {
-                        fmt.Printf("Failed to submit model message to chat DB: %v\n")
+                        fmt.Printf("Failed to submit model message to chat DB: %v\n", err)
+                        return err
+                    }
+                    
+                    fmt.Println(htmxMsg.ThreadId)
+                    threadRecord, err := app.Dao().FindRecordById("chat_meta", htmxMsg.ThreadId)
+                    if err != nil {
+                        fmt.Printf("Error reading thread metadata: %v\n", err)
+                        return err
+                    }
+
+                    fmt.Println(threadRecord)
+
+                    lastMessageTime := types.NowDateTime()
+                    responseChunkComponent := templates.LastMessageTimestamp(htmxMsg.ThreadId, lastMessageTime)
+                   
+                    // sending HTML along websocket needs to be pulled to it's own function
+                    var lastMessageTimeBuf bytes.Buffer
+
+                    err = responseChunkComponent.Render(context.Background(), &lastMessageTimeBuf)
+                    if err != nil {
+                        fmt.Println("templ stream chunk render error")
+                        fmt.Println(err)
+                        return err
+                    }
+                    lastMessageTimeStr := lastMessageTimeBuf.String()
+                    fmt.Println(lastMessageTimeStr)
+                    err = ws.WriteMessage(websocket.TextMessage, []byte(lastMessageTimeStr))
+                    if err != nil {
+                        fmt.Println("socket write failure")
+                        fmt.Println(err)
+                        return err
+                    }
+
+                    threadRecord.Set("last_message_timestamp", types.NowDateTime())
+                    threadRecord.Set("last_message", fullResponse[0:10])
+                    if err := app.Dao().SaveRecord(threadRecord); err != nil {
+                        fmt.Printf("Error updating thread metadata: %v\n", err)
+                        return err
                     }
                 }
             }
