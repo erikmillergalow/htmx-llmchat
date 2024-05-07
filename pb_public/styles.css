@@ -240,10 +240,9 @@ h3 {
 
 .tag {
     font-size: 0.75rem;
-    padding: 0.25rem;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-    margin-right: 0.5rem;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    margin-right: 0.25rem;
     background-color: gray;
     border-radius: 2rem;
     border: 1px solid transparent;
@@ -254,4 +253,23 @@ h3 {
     border: 1px solid #b1c7ba;
 }
 
+.new-tag-editor {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+}
 
+.add-tag-input-row {
+    display: flex;
+}
+
+.tag-value-input {
+    width: 100%
+}
+
+.tag-color-input {
+}
+
+.add-tag-button {
+   margin-top: 0.25rem; 
+}

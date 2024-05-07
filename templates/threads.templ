@@ -70,8 +70,16 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
             <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>     
         </div>
 
-        <div id="tags" class="tags-container">
-            <p class="tag">tag +</p>
+        <div id={ "tags-" + params.Id } class="tags-container">
+            <p 
+                hx-get={ "/thread/tag/" + params.Id }
+                hx-trigger="click consume"
+                hx-target={ "#" + params.Id }
+                hx-swap="beforeend"
+                class="tag"
+            >
+                tag +
+            </p>
             for _, tag := range threadTags {
                 <p class={ "tag", tagStyle(tag.Color) }> { tag.Value } </p>
             }
@@ -81,13 +89,6 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
 
 css tagStyle (color string) {
     background-color: { color };
-}
-
-type TagParams struct {
-    Id string `db:"id" json:"id"`
-    Value string `db:"value" json:"value"`
-    ThreadId string `db:"thread_id" json:"thread_id"`
-    Color string `db:"color" json:"color"`
 }
 
 templ Tag(params TagParams) {

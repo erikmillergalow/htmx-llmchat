@@ -117,8 +117,6 @@ func main() {
             newThreadRecord := models.NewRecord(threadsCollection)
             form := forms.NewRecordUpsert(app, newThreadRecord)
 
-            fmt.Println(form)
-
             form.LoadData(map[string]any{
                 "last_message": "Empty chat...",
                 "last_message_timestamp": newThreadRecord.Created,
@@ -142,6 +140,7 @@ func main() {
                 LastMessageTimestamp: newThreadRecord.Created,
                 Created: newThreadRecord.Created,
             }
+
             // return thread, target threads-list, swap beforestart (or whatever the top is
             c.Response().Writer.WriteHeader(200)
             newThread := templates.NewThreadListEntry(threadParams)
@@ -150,6 +149,75 @@ func main() {
                 fmt.Printf("Error rendering new thread: %v\n", err)
                 return c.String(http.StatusInternalServerError, "failed to render new thread DB entry")
             }
+            return nil
+        })
+
+        e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
+            fmt.Println("open tag editor")
+            
+            id := c.PathParam("id")
+
+            c.Response().Writer.WriteHeader(200)
+            tagEditor := templates.NewTagEditor(id)
+            err := tagEditor.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render tag editor")
+            }
+
+            return nil
+        })
+
+        e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
+            fmt.Println("create tag")
+            
+            id := c.PathParam("id")
+
+            data := apis.RequestInfo(c).Data
+            fmt.Println(data)
+            value := data["value"].(string)
+            color := data["color"].(string)
+
+            tagsCollection, err := app.Dao().FindCollectionByNameOrId("tags")
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "error reading tags DB")
+            }
+
+            newTagRecord := models.NewRecord(tagsCollection)
+            form := forms.NewRecordUpsert(app, newTagRecord)
+
+            form.LoadData(map[string]any{
+                "value": value,
+                "color": color,
+            })
+
+            if err := form.Submit(); err != nil {
+                return c.String(http.StatusInternalServerError, "failed to create new tag DB entry") 
+            }
+
+            threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to read thread DB") 
+            }
+
+            threadRecord.Set("tags", append(threadRecord.GetStringSlice("tags"), newTagRecord.Id))
+            if err = app.Dao().SaveRecord(threadRecord); err != nil {
+                return c.String(http.StatusInternalServerError, "failed to add tag to thread") 
+            }
+           
+            tagParams := templates.TagParams{
+                Id: newTagRecord.Id,
+                Value: value,
+                ThreadId: id,
+                Color: color,
+            }
+
+            c.Response().Writer.WriteHeader(200)
+            newTag := templates.NewTag(tagParams)
+            err = newTag.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render tag editor")
+            }
+
             return nil
         })
 
@@ -232,8 +300,7 @@ func main() {
                 var htmxMsg HTMXSocketMsg
                 err = json.Unmarshal(msg, &htmxMsg)
                 if err != nil {
-                    fmt.Println("error parsing message")
-                    fmt.Println(err)
+                    fmt.Printf("error parsing message: %v\n", err)
                     return err
                 }
                 fmt.Println(htmxMsg)
@@ -285,7 +352,6 @@ func main() {
                         return err
                     }
                     htmlStr := htmlBuf.String()
-                    fmt.Printf("Initial chat receptacle: %v\n", htmlStr)
                     err = ws.WriteMessage(websocket.TextMessage, []byte(htmlStr))
                     if err != nil {
                         fmt.Println("socket write failure")
@@ -329,7 +395,6 @@ func main() {
                             fmt.Printf("\nStream error: %v\n", err)
                             return err
                         }
-                        fmt.Printf(response.Choices[0].Delta.Content)
 
                         fullResponse += response.Choices[0].Delta.Content
                         
@@ -367,14 +432,11 @@ func main() {
                         return err
                     }
                     
-                    fmt.Println(htmxMsg.ThreadId)
                     threadRecord, err := app.Dao().FindRecordById("chat_meta", htmxMsg.ThreadId)
                     if err != nil {
                         fmt.Printf("Error reading thread metadata: %v\n", err)
                         return err
                     }
-
-                    fmt.Println(threadRecord)
 
                     lastMessageTime := types.NowDateTime()
                     responseChunkComponent := templates.LastMessageTimestamp(htmxMsg.ThreadId, lastMessageTime)

@@ -1,0 +1,43 @@
+package templates
+
+type TagParams struct {
+    Id string `db:"id" json:"id"`
+    Value string `db:"value" json:"value"`
+    ThreadId string `db:"thread_id" json:"thread_id"`
+    Color string `db:"color" json:"color"`
+}
+
+templ NewTag(params TagParams) {
+    <div id={ "tags-" + params.ThreadId } hx-oob-swap="beforeend">
+        <p class={ "tag", tagStyle(params.Color) }> { params.Value } </p>
+    </div>
+    <div id="new-tag-editor" hx-swap-oob="delete"></div>
+}
+
+templ NewTagEditor(id string) {
+    <form
+        id="new-tag-editor"
+        class="new-tag-editor"
+        hx-post={ "/thread/tag/" + id }
+        hx-trigger="keyup[keyCode==13] consume"
+        hx-target={ "#tags-" + id }
+        hx-swap="beforeend"
+    >
+        <div class="add-tag-input-row">
+            <input
+                class="tag-value-input"
+                type="text"
+                placeholder="Enter tag name..."
+                name="value"
+                autofocus
+            ></input>
+            <input
+                class="tag-color-input"
+                type="color"
+                placeholder="Enter tag name..."
+                name="color"
+            ></input>
+        </div>
+        <button hx-trigger="click" class="add-tag-button" type="submit">Add tag</button>
+    </form>
+}
