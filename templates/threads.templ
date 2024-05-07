@@ -1,8 +1,6 @@
 package templates
 
 import (
-    "strings"
-    
     "github.com/pocketbase/pocketbase/tools/types"
 )
 
@@ -12,14 +10,13 @@ type ThreadListEntryParams struct {
     LastMessage string `db:"last_message" json:"last_message"`
     LastMessageTimestamp types.DateTime `db:"last_message_timestamp" json:"last_message_timestamp"`
     Created types.DateTime `db:"created" json:"created"`  
-    Tags string `db:"tags" json:"tags"`
     Model string `db:"model" json:"model"`
 }
 
 templ ThreadTitleEditor(id string) {
     <input
         hx-put={ "/thread/title/" + id }
-        hx-trigger="blur" 
+        hx-trigger="blur, keyup[keyCode==13]" 
         hx-target="this"
         hx-swap="outerHTML"
         class="title-edit"
@@ -51,7 +48,7 @@ templ LastMessageTimestamp(id string, time types.DateTime) {
    <div id={ "last-updated-" + id } hx-swap-oob="innerHTML">Updated at: { types.DateTime.String(time) }</div>
 }
 
-templ ThreadListEntry(params ThreadListEntryParams, isNew bool) {
+templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNew bool) {
     <div 
         id={ params.Id }
         class="thread-list-entry"
@@ -75,13 +72,26 @@ templ ThreadListEntry(params ThreadListEntryParams, isNew bool) {
 
         <div id="tags" class="tags-container">
             <p class="tag">tag +</p>
-            for _, tag := range strings.Split(params.Tags, "|") {
-                if (tag != "") {
-                    <p class="tag"> { tag } </p>
-                }
+            for _, tag := range threadTags {
+                <p class={ "tag", tagStyle(tag.Color) }> { tag.Value } </p>
             }
         </div>
     </div> 
+}
+
+css tagStyle (color string) {
+    background-color: { color };
+}
+
+type TagParams struct {
+    Id string `db:"id" json:"id"`
+    Value string `db:"value" json:"value"`
+    ThreadId string `db:"thread_id" json:"thread_id"`
+    Color string `db:"color" json:"color"`
+}
+
+templ Tag(params TagParams) {
+    <p class="tag"> { params.Value } </p>
 }
 
 templ NewThreadListEntry(params ThreadListEntryParams) {
@@ -90,12 +100,12 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
         hx-swap-oob="afterbegin"
         _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
     >
-        @ThreadListEntry(params, true)
+        @ThreadListEntry(params, []TagParams{}, true)
     </div> 
 }
 
-templ ThreadListEntries(paramsList []ThreadListEntryParams) {
-    for _, params := range paramsList {
-        @ThreadListEntry(params, false)
+templ ThreadListEntries(paramsList []ThreadListEntryParams, allTags [][]TagParams) {
+    for i, params := range paramsList {
+        @ThreadListEntry(params, allTags[i], false)
     }
 }

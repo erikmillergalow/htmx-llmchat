@@ -24,6 +24,11 @@ input, button, textarea, select {
 p, h1, h2, h3, h4, h5, h6 {
   overflow-wrap: break-word;
 }
+
+h3 {
+    font-size: 16px;
+}
+
 #root, #__next {
   isolation: isolate;
 }
@@ -241,4 +246,12 @@ p, h1, h2, h3, h4, h5, h6 {
     margin-right: 0.5rem;
     background-color: gray;
     border-radius: 2rem;
+    border: 1px solid transparent;
+    transition: 0.15s all;
 }
+
+.tag:hover {
+    border: 1px solid #b1c7ba;
+}
+
+

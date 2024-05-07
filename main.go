@@ -46,11 +46,38 @@ func main() {
 
         // begin endpoints
         e.Router.GET("/threads", func(c echo.Context) error {
+            fmt.Println("load all threads")
             var threads []templates.ThreadListEntryParams
             app.Dao().DB().Select("*").From("chat_meta").OrderBy("created DESC").All(&threads)
 
+            var allTags [][]templates.TagParams 
+
+            // load thread tags
+            for _, thread := range threads {
+                var threadTags []templates.TagParams 
+                threadRecord, err := app.Dao().FindRecordById("chat_meta", thread.Id)
+                if err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to fetch thread record")
+                }
+                if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
+                    return c.String(http.StatusInternalServerError, "failed to expand thread tags")
+                }
+                //fmt.Println(threadRecord.ExpandedAll("tags"))
+                for _, expandedTag := range threadRecord.ExpandedAll("tags") {
+                    fmt.Println(expandedTag)
+                    threadTags = append(threadTags, templates.TagParams{
+                        Value: expandedTag.GetString("value"),
+                        ThreadId: expandedTag.GetString("value"),
+                        Color: expandedTag.GetString("color"),
+                        Id: expandedTag.Id,
+                    })
+                }
+                allTags = append(allTags, threadTags)
+            }
+
             c.Response().Writer.WriteHeader(200)
-            threadListEntry := templates.ThreadListEntries(threads)
+            threadListEntry := templates.ThreadListEntries(threads, allTags)
+            fmt.Println(threadListEntry)
             err := threadListEntry.Render(context.Background(), c.Response().Writer)
             if err != nil {
                 return c.String(http.StatusInternalServerError, "failed to render thread list repsonse")
