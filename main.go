@@ -1,29 +1,30 @@
 package main
 
 import (
-    "fmt"
-    "log"
-    "os"
-    "context"
-    "net/http"
-    "bytes"
-    "encoding/json"
-    "errors"
-    "io"
+	"bytes"
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
 
-    "github.com/erikmillergalow/htmx-llmchat/templates"
+	"github.com/erikmillergalow/htmx-llmchat/templates"
 
-    "github.com/labstack/echo/v5"
-    "github.com/gorilla/websocket"   
-    openai "github.com/sashabaranov/go-openai"
+	"github.com/gorilla/websocket"
+	"github.com/labstack/echo/v5"
+	// "github.com/sashabaranov/go-openai"
+	openai "github.com/sashabaranov/go-openai"
 
-    "github.com/pocketbase/pocketbase"
-    "github.com/pocketbase/pocketbase/apis"
-    "github.com/pocketbase/pocketbase/core"
-    "github.com/pocketbase/pocketbase/forms"
-    "github.com/pocketbase/pocketbase/models"
-    "github.com/pocketbase/pocketbase/tools/types"
-    "github.com/pocketbase/dbx"
+	"github.com/pocketbase/dbx"
+	"github.com/pocketbase/pocketbase"
+	"github.com/pocketbase/pocketbase/apis"
+	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/forms"
+	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/types"
 )
 
 var (
@@ -360,17 +361,34 @@ func main() {
                     }
 
                     // begin OpenAI specific request
+                    // get all chats from thread, create ChatCompletionMessage
+                    var messages []templates.LoadedMessageParams
+                    app.Dao().DB().
+                        Select("*").
+                        From("chat").
+                        Where(dbx.NewExp("thread_id = {:id}", dbx.Params{ "id": htmxMsg.ThreadId })).
+                        All(&messages)
+
+                    // TODO: utilize ChatMessageRoleSystem for system prompt (ex: "You are a helpful assistant")
+                    var chatHistory []openai.ChatCompletionMessage
+                    for _, message := range messages {
+                        if (message.Sender == "human") {
+                            chatHistory = append(chatHistory, openai.ChatCompletionMessage{
+                                Role: openai.ChatMessageRoleUser,
+                                Content: message.Message,
+                            })
+                        } else {
+                            chatHistory = append(chatHistory, openai.ChatCompletionMessage{
+                                Role: openai.ChatMessageRoleAssistant,
+                                Content: message.Message,
+                            })
+                        }
+                    }
 
                     req := openai.ChatCompletionRequest{
                         Model: openai.GPT4,
                         // MaxTokens: 20,
-                        Messages: []openai.ChatCompletionMessage{
-                            {
-                                Role: openai.ChatMessageRoleUser,
-                                Content: htmxMsg.Msg,
-                                //Content: "<|im_start|>" + htmxMsg.Msg + "<|im_end|>",
-                            },
-                        },
+                        Messages: chatHistory,
                         Stream: true,
                     }
                     stream, err := chatgptClient.CreateChatCompletionStream(context.Background(), req)
