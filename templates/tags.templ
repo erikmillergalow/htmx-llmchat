@@ -19,7 +19,6 @@ templ NewTagEditor(id string) {
         id="new-tag-editor"
         class="new-tag-editor"
         hx-post={ "/thread/tag/" + id }
-        hx-trigger="keyup[keyCode==13] consume"
         hx-target={ "#tags-" + id }
         hx-swap="beforeend"
     >
@@ -38,6 +37,6 @@ templ NewTagEditor(id string) {
                 name="color"
             ></input>
         </div>
-        <button hx-trigger="click" class="add-tag-button" type="submit">Add tag</button>
+        <button type="submit" id="send-button" class="add-tag-button">Add tag</button>
     </form>
 }
