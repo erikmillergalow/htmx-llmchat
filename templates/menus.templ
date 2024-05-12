@@ -1,0 +1,35 @@
+package templates
+
+type SideBarMenuParams struct { 
+    OpenAIKey string `db:"openai_key" json:"openai_key"`
+    GroqKey string `db:"groq_key" json:"groq_key"`
+}
+
+templ SideBarMenu(params SideBarMenuParams) {
+        <form
+            hx-put="/config"
+            hx-target="this"
+            hx-swap="beforeend"
+            id="side-bar-menu"
+            class="side-bar-menu"
+        >
+            <label>OpenAI Key</label>
+            <input type="password" name="openai-key" class="key-input" value={ params.OpenAIKey }></input>
+            <label>Groq Key</label>
+            <input type="password" name="groq-key" class="key-input" value={ params.GroqKey }></input>
+            <button class="keys-submit-button">Save</button>
+            <button
+                hx-get="/config/done"
+                hx-target="#side-bar-menu"
+                hx-swap="outerHTML"
+                hx-trigger="click"
+                class="keys-done-button"
+            >
+                Done
+            </button>
+        </form>
+}
+
+templ SettingsUpdated() {
+    <p class="update-alert" _="on load wait 2s remove me">Settings updated successfully!</p>
+}

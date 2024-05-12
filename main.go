@@ -36,14 +36,22 @@ func main() {
 
     // this should be initialized when selecting a model
     // may be initializing API like this, may be spinning up local model
-    chatgptClient := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
 //  config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
 //  config.BaseURL = "http://127.0.0.1:8080"
 //  chatgptClient := openai.NewClientWithConfig(config)
 
+    selectedModel := "openai"
+
     // serve static files from public dir
     app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
         e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
+
+        var settings []templates.SideBarMenuParams
+        app.Dao().DB().
+            Select("*").
+            From("settings").
+            All(&settings)
+        chatgptClient := openai.NewClient(settings[0].OpenAIKey)
 
         // begin endpoints
         e.Router.GET("/threads", func(c echo.Context) error {
@@ -106,6 +114,42 @@ func main() {
             }
 
             return nil               
+        })
+
+        e.Router.GET("/model", func(c echo.Context) error {
+            fmt.Println("select model")
+            
+            model := c.QueryParam("model")
+            fmt.Println(model)
+
+            if (model == "openai") {
+                c.Response().Writer.WriteHeader(200)
+                selectModelStatus := templates.SelectModelStatus("Now chatting with OpenAI")
+                fmt.Println(selectModelStatus)
+                chatgptClient = openai.NewClient(settings[0].OpenAIKey)
+                selectedModel = "openai"
+                err := selectModelStatus.Render(context.Background(), c.Response().Writer)
+                if err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to render select model status")
+                }
+            } else if (model == "groq") {
+                c.Response().Writer.WriteHeader(200)
+                selectModelStatus := templates.SelectModelStatus("Now chatting with Groq API")
+                err := selectModelStatus.Render(context.Background(), c.Response().Writer)
+                fmt.Println(selectModelStatus)
+                config := openai.DefaultConfig(settings[0].GroqKey)
+                config.BaseURL = "https://api.groq.com/openai/v1"
+                chatgptClient = openai.NewClientWithConfig(config)
+                selectedModel = "groq"
+                if err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to render select model status")
+                }
+
+            } else {
+                return c.String(http.StatusInternalServerError, "model not recognized")
+            }
+
+            return nil
         })
 
         e.Router.POST("/thread/create", func(c echo.Context) error {
@@ -227,14 +271,116 @@ func main() {
 
             id := c.PathParam("id")
 
+            threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to get thread record to set title")
+            }
+
             c.Response().Writer.WriteHeader(200)
-            titleEditor := templates.ThreadTitleEditor(id)
-            err := titleEditor.Render(context.Background(), c.Response().Writer)
+            titleEditor := templates.ThreadTitleEditor(id, threadRecord.GetString("thread_title"))
+            err = titleEditor.Render(context.Background(), c.Response().Writer)
             if err != nil {
                 return c.String(http.StatusInternalServerError, "failed to render title editor")
             }
 
             return nil               
+        })
+
+        e.Router.GET("/config", func(c echo.Context) error {
+            fmt.Println("opening config")
+
+            // this should be associated with user accounts for server style setup
+            var settings []templates.SideBarMenuParams
+            app.Dao().DB().
+                Select("*").
+                From("settings").
+                All(&settings)
+
+            fmt.Println(settings)
+
+            c.Response().Writer.WriteHeader(200)
+            loadedSettingsMenu := templates.SideBarMenu(settings[0])
+            err := loadedSettingsMenu.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render loaded chat response")
+            }
+            
+            return nil;
+        })
+
+        e.Router.PUT("/config", func(c echo.Context) error {
+            fmt.Println("saving config")
+
+            // this should be associated with user accounts for server style setup
+            settingsRecord, err := app.Dao().FindFirstRecordByData("settings", "type", "keys")
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to fetch keys record")
+            }
+            
+            data := apis.RequestInfo(c).Data
+            fmt.Printf("settings data: %v\n", data) 
+            openAIKey := data["openai-key"].(string)
+            groqKey := data["groq-key"].(string)
+
+            settingsRecord.Set("openai_key", openAIKey)
+            settingsRecord.Set("groq_key", groqKey)
+            if err = app.Dao().SaveRecord(settingsRecord); err != nil {
+                return c.String(http.StatusInternalServerError, "failed to save key settings") 
+            }
+
+            c.Response().Writer.WriteHeader(200)
+            settingsUpdated := templates.SettingsUpdated()
+            err = settingsUpdated.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render settings update response")
+            }
+            
+            return nil;
+        })
+
+        e.Router.GET("/config/done", func(c echo.Context) error {
+            fmt.Println("closing config")
+
+            // this is currently the same as the /threads endpoint
+            fmt.Println("load all threads")
+            var threads []templates.ThreadListEntryParams
+            app.Dao().DB().Select("*").From("chat_meta").OrderBy("created DESC").All(&threads)
+
+            var allTags [][]templates.TagParams 
+
+            // load thread tags
+            for _, thread := range threads {
+                var threadTags []templates.TagParams 
+                threadRecord, err := app.Dao().FindRecordById("chat_meta", thread.Id)
+                if err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to fetch thread record")
+                }
+                if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
+                    return c.String(http.StatusInternalServerError, "failed to expand thread tags")
+                }
+                //fmt.Println(threadRecord.ExpandedAll("tags"))
+                for _, expandedTag := range threadRecord.ExpandedAll("tags") {
+                    fmt.Println(expandedTag)
+                    threadTags = append(threadTags, templates.TagParams{
+                        Value: expandedTag.GetString("value"),
+                        ThreadId: expandedTag.GetString("value"),
+                        Color: expandedTag.GetString("color"),
+                        Id: expandedTag.Id,
+                    })
+                }
+                allTags = append(allTags, threadTags)
+            }
+
+            c.Response().Writer.WriteHeader(200)
+            threadListEntry := templates.ThreadListEntries(threads, allTags)
+            fmt.Println(threadListEntry)
+            err := threadListEntry.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render thread list repsonse")
+            }
+
+            return nil               
+
         })
 
         e.Router.PUT("/thread/title/:id", func(c echo.Context) error {
@@ -385,8 +531,13 @@ func main() {
                         }
                     }
 
+                    model := openai.GPT4
+                    if (selectedModel == "groq") {
+                        model = "llama3-70b-8192"
+                    }
+
                     req := openai.ChatCompletionRequest{
-                        Model: openai.GPT4,
+                        Model: model,
                         // MaxTokens: 20,
                         Messages: chatHistory,
                         Stream: true,

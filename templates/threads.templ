@@ -13,7 +13,7 @@ type ThreadListEntryParams struct {
     Model string `db:"model" json:"model"`
 }
 
-templ ThreadTitleEditor(id string) {
+templ ThreadTitleEditor(id string, currentTitle string) {
     <input
         hx-put={ "/thread/title/" + id }
         hx-trigger="blur, keyup[keyCode==13]" 
@@ -24,15 +24,17 @@ templ ThreadTitleEditor(id string) {
         placeholder="Enter title..."
         name="title"
         autofocus
+        onfocus="this.select();"
+        value={ currentTitle }
     ></input>
 }
 
 templ ThreadTitle(id string, title string) {
     <div
-            hx-trigger="click consume"
-            hx-get={ "/thread/title/" + id }
-            hx-target="this"
-            hx-swap="outerHTML"
+        hx-trigger="click consume"
+        hx-get={ "/thread/title/" + id }
+        hx-target="this"
+        hx-swap="outerHTML"
     >
         <h3 class="thread-entry-title">
             { title }

@@ -112,6 +112,10 @@ h3 {
     margin-left: 0.5rem;
 }
 
+.title-edit {
+    width: 100%;
+}
+
 .messages-container {
     display: flex;
     flex-direction: column;
@@ -274,3 +278,34 @@ h3 {
 .add-tag-button {
    margin-top: 0.25rem; 
 }
+
+.side-bar-menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.key-input {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.keys-submit-button {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.model-select {
+    margin-left: auto;    
+}
+
+.select-model-status {
+    position: absolute;
+    top: 3rem;
+    right: 0.5rem;
+    background-color: #e6f0f0;
+    padding: 0.75rem;
+    border-radius: 2rem;
+}
+
