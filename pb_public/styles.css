@@ -132,6 +132,11 @@ h3 {
     white-space: preserve;
 }
 
+.chat-message-model {
+   margin-bottom: 0.5rem;
+   font-size: 10px;
+}
+
 .from-user {
     background-color: #c0d0c7; 
 }

@@ -1,10 +1,10 @@
 package templates
 
 type ChatMessageParams struct {
-    Id string
+    Id string 
     ModelMessage string
     UserMessage string
-//    Model string
+    Model string
 //    Timestamp int
 //    Tags []string
     Sender string
@@ -13,9 +13,11 @@ type ChatMessageParams struct {
 templ ChatMessage(params ChatMessageParams) {
     <div id="chat-messages" hx-swap-oob="beforeend">
         <div class="chat-message from-user">
+            <div class="chat-message-model">user:</div>
             { params.UserMessage }
         </div>
         <div id={ "response-" + params.Id } class="chat-message from-model">
+            <div class="chat-message-model">{ params.Model }:</div>
         </div>
     </div>
 }
@@ -27,7 +29,7 @@ templ ChatStreamChunk(id string, chunk string) {
 type LoadedMessageParams struct {
     Id string `db:"id" json:"id"`
     Message string `db:"message" json:"message"`
-//    Model string 
+    Model string `db:"model" json:"model"`
 //    Timestamp int
 //    Tags []string
     Sender string `db:"sender" json:"sender"`
@@ -37,10 +39,12 @@ templ LoadedThread(messages []LoadedMessageParams) {
    for _, message := range messages {
        if (message.Sender == "human") {
             <div class="chat-message from-user">
+                <div class="chat-message-model"><i>user:</i></div>
                 { message.Message }
             </div>
        } else if (message.Sender == "model") {
             <div id={ message.Id } class="chat-message from-model">
+                <div class="chat-message-model"><i>{ message.Model }:</i></div>
                 { message.Message }
             </div>
        }

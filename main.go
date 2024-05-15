@@ -25,6 +25,8 @@ import (
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
 	"github.com/pocketbase/pocketbase/tools/types"
+	"github.com/pocketbase/pocketbase/plugins/migratecmd"
+        _ "github.com/erikmillergalow/htmx-llmchat/migrations"
 )
 
 var (
@@ -33,6 +35,8 @@ var (
 
 func main() {
     app := pocketbase.New()
+
+    migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{ Automigrate: true })
 
     // this should be initialized when selecting a model
     // may be initializing API like this, may be spinning up local model
@@ -462,6 +466,7 @@ func main() {
                         "thread_id": htmxMsg.ThreadId,
                         "message": htmxMsg.Msg,
                         "sender": "human",
+                        "model": selectedModel,
                     })
 
                     if err := form.Submit(); err != nil {
@@ -487,6 +492,7 @@ func main() {
                     chatParams := templates.ChatMessageParams{
                         Id: modelRecord.Id,
                         UserMessage: htmxMsg.Msg,
+                        Model: selectedModel,
                     }
                     chatComponent := templates.ChatMessage(chatParams)
 
@@ -594,6 +600,7 @@ func main() {
                         "thread_id": htmxMsg.ThreadId,
                         "message": fullResponse,
                         "sender": "model",
+                        "model": selectedModel,
                     })
 
                     if err := modelForm.Submit(); err != nil {
