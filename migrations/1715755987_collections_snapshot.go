@@ -361,7 +361,20 @@ func init() {
 			return err
 		}
 
-		return daos.New(db).ImportCollections(collections, true, nil)
+                err := daos.New(db).ImportCollections(collections, true, nil)
+                if err != nil {
+                    return err
+                }
+
+                dao := daos.New(db)
+                settingsCollection, err := dao.FindCollectionByNameOrId("settings")
+                if err != nil {
+                    return err
+                }
+
+                settingsRecord := models.NewRecord(settingsCollection)
+                settingsRecord.Set("type", "keys")
+                return dao.SaveRecord(settingsRecord)
 	}, func(db dbx.Builder) error {
 		return nil
 	})
