@@ -51,7 +51,7 @@ h3 {
     align-items: center;
     background-color: #b1b7bf;
     border-right: solid #666;
-    border-width: 1px;
+    border-width: 0.5px;
     padding: 0.5rem;
 }
 
@@ -127,8 +127,8 @@ h3 {
     padding: 0.5rem;
     margin-top: 0.25rem;
     border-radius: 5px;
-    border-top: solid 1px #666;
-    border-bottom: solid 1px #666;
+    border-top: solid 0.75px #666;
+    border-bottom: solid 0.75px #666;
     white-space: preserve;
 }
 
@@ -153,8 +153,8 @@ h3 {
     grid-column-end: 5;
     display: flex;
     background-color: #b1f7ba;
-    border-top: solid;
-    border-width: 1px;
+    border-top: solid #666;
+    border-width: 0.5px;
     height: 100%;
     width: 100%;
 }
@@ -197,8 +197,8 @@ h3 {
 .thread-list-entry {
     padding: 0.5rem;
     margin-top: 0.25rem;
-    border-top: solid 1px #666;
-    border-bottom: solid 1px #666;
+    border-top: solid 0.75px #666;
+    border-bottom: solid 0.75px #666;
     transition: 0.3s all;
     border-radius: 5px;
 }
