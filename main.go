@@ -15,7 +15,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
-	// "github.com/sashabaranov/go-openai"
 	openai "github.com/sashabaranov/go-openai"
 
 	"github.com/pocketbase/dbx"
@@ -37,12 +36,6 @@ func main() {
     app := pocketbase.New()
 
     migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{ Automigrate: true })
-
-    // this should be initialized when selecting a model
-    // may be initializing API like this, may be spinning up local model
-//  config := openai.DefaultConfig(os.Getenv("OPENAI_API_KEY"))
-//  config.BaseURL = "http://127.0.0.1:8080"
-//  chatgptClient := openai.NewClientWithConfig(config)
 
     selectedModel := "openai"
 
@@ -75,7 +68,6 @@ func main() {
                 if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
                     return c.String(http.StatusInternalServerError, "failed to expand thread tags")
                 }
-                //fmt.Println(threadRecord.ExpandedAll("tags"))
                 for _, expandedTag := range threadRecord.ExpandedAll("tags") {
                     fmt.Println(expandedTag)
                     threadTags = append(threadTags, templates.TagParams{
@@ -129,8 +121,6 @@ func main() {
             if (model == "openai") {
                 c.Response().Writer.WriteHeader(200)
                 selectModelStatus := templates.SelectModelStatus("Now chatting with OpenAI")
-                fmt.Println(selectModelStatus)
-                chatgptClient = openai.NewClient(settings[0].OpenAIKey)
                 selectedModel = "openai"
                 err := selectModelStatus.Render(context.Background(), c.Response().Writer)
                 if err != nil {
@@ -140,10 +130,6 @@ func main() {
                 c.Response().Writer.WriteHeader(200)
                 selectModelStatus := templates.SelectModelStatus("Now chatting with Groq API")
                 err := selectModelStatus.Render(context.Background(), c.Response().Writer)
-                fmt.Println(selectModelStatus)
-                config := openai.DefaultConfig(settings[0].GroqKey)
-                config.BaseURL = "https://api.groq.com/openai/v1"
-                chatgptClient = openai.NewClientWithConfig(config)
                 selectedModel = "groq"
                 if err != nil {
                     return c.String(http.StatusInternalServerError, "failed to render select model status")
@@ -362,7 +348,6 @@ func main() {
                 if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
                     return c.String(http.StatusInternalServerError, "failed to expand thread tags")
                 }
-                //fmt.Println(threadRecord.ExpandedAll("tags"))
                 for _, expandedTag := range threadRecord.ExpandedAll("tags") {
                     fmt.Println(expandedTag)
                     threadTags = append(threadTags, templates.TagParams{
@@ -536,10 +521,21 @@ func main() {
                             })
                         }
                     }
+        
+                    var settings []templates.SideBarMenuParams
+                    app.Dao().DB().
+                        Select("*").
+                        From("settings").
+                        All(&settings)
 
                     model := openai.GPT4
                     if (selectedModel == "groq") {
                         model = "llama3-70b-8192"
+                        config := openai.DefaultConfig(settings[0].GroqKey)
+                        config.BaseURL = "https://api.groq.com/openai/v1"
+                        chatgptClient = openai.NewClientWithConfig(config)
+                    } else {
+                        chatgptClient = openai.NewClient(settings[0].OpenAIKey)
                     }
 
                     req := openai.ChatCompletionRequest{
