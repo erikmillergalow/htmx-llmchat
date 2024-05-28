@@ -42,8 +42,13 @@ templ ThreadTitle(id string, title string) {
     </div>
 }
 
+templ ThreadTitleUpdate(id string, title string) {
+    @ThreadTitle(id, title)
+    @OobTextSwap("thread-title", title)
+}
+
 templ OobTextSwap(id string, value string) {
-   <div id={ id } hx-swap-oob="innerHTML">Updated at: { value }</div>
+   <div id={ id } hx-swap-oob="innerHTML">{ value }</div>
 }
 
 templ LastMessageTimestamp(id string, time types.DateTime) {
