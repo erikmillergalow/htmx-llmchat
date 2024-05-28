@@ -276,6 +276,36 @@ func main() {
             return nil               
         })
 
+        e.Router.PUT("/thread/title/:id", func(c echo.Context) error {
+            fmt.Println("updating thread title")
+            
+            id := c.PathParam("id")
+
+            data := apis.RequestInfo(c).Data
+            title := data["title"].(string)
+
+            idRecord, err := app.Dao().FindRecordById("chat_meta", id)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to find thread record")
+            }
+            if title != "" {
+                idRecord.Set("thread_title", title)
+                if err := app.Dao().SaveRecord(idRecord); err != nil {
+                    return c.String(http.StatusInternalServerError, "failed to update thread title record") 
+                }
+            } else {
+                title = idRecord.GetString("thread_title")
+            }
+            threadTitle := templates.ThreadTitle(id, title)
+            err = threadTitle.Render(context.Background(), c.Response().Writer)
+            if err != nil {
+                return c.String(http.StatusInternalServerError, "failed to render thread title")
+            }
+            
+
+            return nil
+        })
+
         e.Router.GET("/config", func(c echo.Context) error {
             fmt.Println("opening config")
 
@@ -370,36 +400,6 @@ func main() {
 
             return nil               
 
-        })
-
-        e.Router.PUT("/thread/title/:id", func(c echo.Context) error {
-            fmt.Println("updating thread title")
-            
-            id := c.PathParam("id")
-
-            data := apis.RequestInfo(c).Data
-            title := data["title"].(string)
-
-            idRecord, err := app.Dao().FindRecordById("chat_meta", id)
-            if err != nil {
-                return c.String(http.StatusInternalServerError, "failed to find thread record")
-            }
-            if title != "" {
-                idRecord.Set("thread_title", title)
-                if err := app.Dao().SaveRecord(idRecord); err != nil {
-                    return c.String(http.StatusInternalServerError, "failed to update thread title record") 
-                }
-            } else {
-                title = idRecord.GetString("thread_title")
-            }
-            threadTitle := templates.ThreadTitle(id, title)
-            err = threadTitle.Render(context.Background(), c.Response().Writer)
-            if err != nil {
-                return c.String(http.StatusInternalServerError, "failed to render thread title")
-            }
-            
-
-            return nil
         })
 
         // websocket connection:
