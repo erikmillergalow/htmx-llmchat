@@ -40,6 +40,10 @@ templ ThreadTitle(id string, title string) {
             { title }
         </h3>
     </div>
+}
+
+templ ThreadTitleUpdate(id string, title string) {
+    @ThreadTitle(id, title)
     @OobTextSwap("thread-title", title)
 }
 

@@ -296,7 +296,7 @@ func main() {
             } else {
                 title = idRecord.GetString("thread_title")
             }
-            threadTitle := templates.ThreadTitle(id, title)
+            threadTitle := templates.ThreadTitleUpdate(id, title)
             err = threadTitle.Render(context.Background(), c.Response().Writer)
             if err != nil {
                 return c.String(http.StatusInternalServerError, "failed to render thread title")
