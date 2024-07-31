@@ -1,10 +1,7 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
@@ -91,33 +88,8 @@ func main() {
 		})
 
 		e.Router.PUT("/config", func(c echo.Context) error {
-			fmt.Println("saving config")
-
-			// this should be associated with user accounts for server style setup
-			settingsRecord, err := app.Dao().FindFirstRecordByData("settings", "type", "keys")
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to fetch keys record")
-			}
-
 			data := apis.RequestInfo(c).Data
-
-			openAIKey := data["openai-key"].(string)
-			groqKey := data["groq-key"].(string)
-
-			settingsRecord.Set("openai_key", openAIKey)
-			settingsRecord.Set("groq_key", groqKey)
-			if err = app.Dao().SaveRecord(settingsRecord); err != nil {
-				return c.String(http.StatusInternalServerError, "failed to save key settings")
-			}
-
-			c.Response().Writer.WriteHeader(200)
-			settingsUpdated := templates.SettingsUpdated()
-			err = settingsUpdated.Render(context.Background(), c.Response().Writer)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to render settings update response")
-			}
-
-			return nil
+			return SaveConfig(data, c, app)
 		})
 
 		e.Router.GET("/config/done", func(c echo.Context) error {
