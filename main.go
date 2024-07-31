@@ -89,9 +89,7 @@ func main() {
 
 		e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
-
 			data := apis.RequestInfo(c).Data
-
 			return SaveTag(id, data, c, app)
 
 		})
