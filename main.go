@@ -66,28 +66,7 @@ func main() {
 			model := c.QueryParam("model")
 			fmt.Println(model)
 
-			if model == "openai" {
-				c.Response().Writer.WriteHeader(200)
-				selectModelStatus := templates.SelectModelStatus("Now chatting with OpenAI")
-				selectedModel = "openai"
-				err := selectModelStatus.Render(context.Background(), c.Response().Writer)
-				if err != nil {
-					return c.String(http.StatusInternalServerError, "failed to render select model status")
-				}
-			} else if model == "groq" {
-				c.Response().Writer.WriteHeader(200)
-				selectModelStatus := templates.SelectModelStatus("Now chatting with Groq API")
-				err := selectModelStatus.Render(context.Background(), c.Response().Writer)
-				selectedModel = "groq"
-				if err != nil {
-					return c.String(http.StatusInternalServerError, "failed to render select model status")
-				}
-
-			} else {
-				return c.String(http.StatusInternalServerError, "model not recognized")
-			}
-
-			return nil
+			return SelectModel(model, &selectedModel, c, app)
 		})
 
 		e.Router.POST("/thread/create", func(c echo.Context) error {
