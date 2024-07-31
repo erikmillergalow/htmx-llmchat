@@ -60,88 +60,6 @@ func main() {
 			return GetThread(threadId, c, app)
 		})
 
-		e.Router.GET("/model", func(c echo.Context) error {
-			fmt.Println("select model")
-
-			model := c.QueryParam("model")
-			fmt.Println(model)
-
-			return SelectModel(model, &selectedModel, c, app)
-		})
-
-		e.Router.POST("/thread/create", func(c echo.Context) error {
-			return CreateThread(c, app)
-		})
-
-		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
-			fmt.Println("open tag editor")
-
-			id := c.PathParam("id")
-
-			c.Response().Writer.WriteHeader(200)
-			tagEditor := templates.NewTagEditor(id)
-			err := tagEditor.Render(context.Background(), c.Response().Writer)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to render tag editor")
-			}
-
-			return nil
-		})
-
-		e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
-			fmt.Println("create tag")
-
-			id := c.PathParam("id")
-
-			data := apis.RequestInfo(c).Data
-			fmt.Println(data)
-			value := data["value"].(string)
-			color := data["color"].(string)
-
-			tagsCollection, err := app.Dao().FindCollectionByNameOrId("tags")
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "error reading tags DB")
-			}
-
-			newTagRecord := models.NewRecord(tagsCollection)
-			form := forms.NewRecordUpsert(app, newTagRecord)
-
-			form.LoadData(map[string]any{
-				"value": value,
-				"color": color,
-			})
-
-			if err := form.Submit(); err != nil {
-				return c.String(http.StatusInternalServerError, "failed to create new tag DB entry")
-			}
-
-			threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to read thread DB")
-			}
-
-			threadRecord.Set("tags", append(threadRecord.GetStringSlice("tags"), newTagRecord.Id))
-			if err = app.Dao().SaveRecord(threadRecord); err != nil {
-				return c.String(http.StatusInternalServerError, "failed to add tag to thread")
-			}
-
-			tagParams := templates.TagParams{
-				Id:       newTagRecord.Id,
-				Value:    value,
-				ThreadId: id,
-				Color:    color,
-			}
-
-			c.Response().Writer.WriteHeader(200)
-			newTag := templates.NewTag(tagParams)
-			err = newTag.Render(context.Background(), c.Response().Writer)
-			if err != nil {
-				return c.String(http.StatusInternalServerError, "failed to render tag editor")
-			}
-
-			return nil
-		})
-
 		e.Router.GET("/thread/title/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			return EditThreadTitle(id, c, app)
@@ -153,6 +71,29 @@ func main() {
 			title := data["title"].(string)
 
 			return SaveThreadTitle(id, title, c, app)
+		})
+
+		e.Router.POST("/thread/create", func(c echo.Context) error {
+			return CreateThread(c, app)
+		})
+
+		e.Router.GET("/model", func(c echo.Context) error {
+			model := c.QueryParam("model")
+			return SelectModel(model, &selectedModel, c, app)
+		})
+
+		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
+			id := c.PathParam("id")
+			return CreateTag(id, c)
+		})
+
+		e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
+			id := c.PathParam("id")
+
+			data := apis.RequestInfo(c).Data
+
+			return SaveTag(id, data, c, app)
+
 		})
 
 		e.Router.GET("/config", func(c echo.Context) error {
