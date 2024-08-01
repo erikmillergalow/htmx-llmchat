@@ -3,34 +3,55 @@
     src: url('lib/ttf/Hack-Regular.ttf');
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
 }
+
 * {
-  margin: 0;
+    margin: 0;
 }
+
 body {
-  font-family: "Hack", "Lucida Console";
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
+    font-family: "Hack", "Lucida Console";
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
-img, picture, video, canvas, svg {
-  display: block;
-  max-width: 100%;
+
+img,
+picture,
+video,
+canvas,
+svg {
+    display: block;
+    max-width: 100%;
 }
-input, button, textarea, select {
-  font: inherit;
+
+input,
+button,
+textarea,
+select {
+    font: inherit;
 }
-p, h1, h2, h3, h4, h5, h6 {
-  overflow-wrap: break-word;
+
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    overflow-wrap: break-word;
 }
 
 h3 {
     font-size: 16px;
 }
 
-#root, #__next {
-  isolation: isolate;
+#root,
+#__next {
+    isolation: isolate;
 }
 
 .split {
@@ -72,12 +93,35 @@ h3 {
     width: 100%;
 }
 
+.sidebar-content {
+    width: 100%;
+    height: 100%;
+    overflow: scroll;
+    scrollbar-width: thin;
+}
+
+.sidebar-icons-left {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+}
+
 .menu-icon {
     border-radius: 5px;
     transition 0.3s all;
 }
 
 .menu-icon:hover {
+    background-color: #9a9fa6;
+}
+
+.search-icon {
+    margin-left: 1rem;
+    border-radius: 5px;
+    transition: 0.3s all;
+}
+
+.search-icon:hover {
     background-color: #9a9fa6;
 }
 
@@ -139,16 +183,16 @@ h3 {
 }
 
 .chat-message-model {
-   margin-bottom: 0.5rem;
-   font-size: 10px;
+    margin-bottom: 0.5rem;
+    font-size: 10px;
 }
 
 .from-user {
-    background-color: #c0d0c7; 
+    background-color: #c0d0c7;
 }
 
 .from-model {
-    background-color: #b2c1b8; 
+    background-color: #b2c1b8;
 
 }
 
@@ -193,13 +237,6 @@ h3 {
     background-color: 'green';
 }
 
-.threads-list {
-    width: 100%;
-    height: 100%;
-    overflow: scroll;
-    scrollbar-width: thin;
-}
-
 .thread-list-entry {
     padding: 0.5rem;
     margin-top: 0.25rem;
@@ -213,12 +250,9 @@ h3 {
     background-color: #9a9fa6;
 }
 
-.thread-entry-title {
-    
-}
+.thread-entry-title {}
 
-.thread-entry-model {
-}
+.thread-entry-model {}
 
 .thread-entry-message {
     font-size: 13px;
@@ -250,7 +284,7 @@ h3 {
 .tags-container {
     display: flex;
     flex-direction: row;
-    width: 100%; 
+    width: 100%;
     margin-top: 0.5rem;
 }
 
@@ -283,14 +317,13 @@ h3 {
     width: 100%
 }
 
-.tag-color-input {
-}
+.tag-color-input {}
 
 .add-tag-button {
-   margin-top: 0.25rem; 
+    margin-top: 0.25rem;
 }
 
-.side-bar-menu {
+.config-menu {
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -307,8 +340,25 @@ h3 {
     width: 100%;
 }
 
+.search-menu {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.search-input {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
+.search-submit-button {
+    margin-top: 0.5rem;
+    width: 100%;
+}
+
 .model-select {
-    margin-left: auto;    
+    margin-left: auto;
 }
 
 .select-model-status {
@@ -319,4 +369,3 @@ h3 {
     padding: 0.75rem;
     border-radius: 2rem;
 }
-

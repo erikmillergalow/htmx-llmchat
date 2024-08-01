@@ -16,28 +16,19 @@ import (
 
 func GetThreadList(c echo.Context, app *pocketbase.PocketBase) error {
 	var threads []templates.ThreadListEntryParams
-	app.Dao().DB().Select("*").From("chat_meta").OrderBy("created DESC").All(&threads)
+	app.Dao().DB().
+		Select("*").
+		From("chat_meta").
+		OrderBy("created DESC").
+		All(&threads)
 
 	var allTags [][]templates.TagParams
 
 	// load thread tags
 	for _, thread := range threads {
-		var threadTags []templates.TagParams
-		threadRecord, err := app.Dao().FindRecordById("chat_meta", thread.Id)
+		threadTags, err := LoadThreadTags(thread.Id, c, app)
 		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to fetch thread record")
-		}
-		if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
-			return c.String(http.StatusInternalServerError, "failed to expand thread tags")
-		}
-		for _, expandedTag := range threadRecord.ExpandedAll("tags") {
-			fmt.Println(expandedTag)
-			threadTags = append(threadTags, templates.TagParams{
-				Value:    expandedTag.GetString("value"),
-				ThreadId: expandedTag.GetString("value"),
-				Color:    expandedTag.GetString("color"),
-				Id:       expandedTag.Id,
-			})
+			return err
 		}
 		allTags = append(allTags, threadTags)
 	}
@@ -47,7 +38,7 @@ func GetThreadList(c echo.Context, app *pocketbase.PocketBase) error {
 	fmt.Println(threadListEntry)
 	err := threadListEntry.Render(context.Background(), c.Response().Writer)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render thread list repsonse")
+		return c.String(http.StatusInternalServerError, "failed to render thread list response")
 	}
 
 	return nil

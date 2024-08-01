@@ -9,14 +9,14 @@ type ThreadListEntryParams struct {
     Title string `db:"thread_title" json:"thread_title"`
     LastMessage string `db:"last_message" json:"last_message"`
     LastMessageTimestamp types.DateTime `db:"last_message_timestamp" json:"last_message_timestamp"`
-    Created types.DateTime `db:"created" json:"created"`  
+    Created types.DateTime `db:"created" json:"created"`
     Model string `db:"model" json:"model"`
 }
 
 templ ThreadTitleEditor(id string, currentTitle string) {
     <input
         hx-put={ "/thread/title/" + id }
-        hx-trigger="blur, keyup[keyCode==13]" 
+        hx-trigger="blur, keyup[keyCode==13]"
         hx-target="this"
         hx-swap="outerHTML"
         class="title-edit"
@@ -56,7 +56,7 @@ templ LastMessageTimestamp(id string, time types.DateTime) {
 }
 
 templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNew bool) {
-    <div 
+    <div
         id={ params.Id }
         class="thread-list-entry"
         hx-get={ "/thread/" + params.Id }
@@ -74,11 +74,11 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
         <!-- <p class="thread-entry-message"> { params.LastMessage } </p> -->
         <div class="dual-timestamps-container">
             <p class="timestamp start">Created at: { types.DateTime.String(params.Created) } </p>
-            <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>     
+            <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>
         </div>
 
         <div id={ "tags-" + params.Id } class="tags-container">
-            <p 
+            <p
                 hx-get={ "/thread/tag/" + params.Id }
                 hx-trigger="click consume"
                 hx-target={ "#" + params.Id }
@@ -91,7 +91,7 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
                 <p class={ "tag", tagStyle(tag.Color) }> { tag.Value } </p>
             }
         </div>
-    </div> 
+    </div>
 }
 
 css tagStyle (color string) {
@@ -104,12 +104,12 @@ templ Tag(params TagParams) {
 
 templ NewThreadListEntry(params ThreadListEntryParams) {
     <div
-        id="threads-list"
+        id="sidebar-content"
         hx-swap-oob="afterbegin"
         _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
     >
         @ThreadListEntry(params, []TagParams{}, true)
-    </div> 
+    </div>
     <div class="chat-window" id="chat-window" hx-swap-oob="outerHTML">
         <div class="chat-title-header">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
@@ -127,7 +127,7 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
             </select>
         </div>
 
-        <!-- fill message history here, stream responses --> 
+        <!-- fill message history here, stream responses -->
         <div class="messages-container" id="chat-messages">
 
         </div>

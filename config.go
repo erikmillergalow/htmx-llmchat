@@ -10,7 +10,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 )
 
-func GetConfig(c echo.Context, app *pocketbase.PocketBase) error {
+func OpenConfig(c echo.Context, app *pocketbase.PocketBase) error {
 	// this should be associated with user accounts for server style setup
 	var settings []templates.SideBarMenuParams
 	app.Dao().DB().

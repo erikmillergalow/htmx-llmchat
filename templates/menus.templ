@@ -1,6 +1,6 @@
 package templates
 
-type SideBarMenuParams struct { 
+type SideBarMenuParams struct {
     OpenAIKey string `db:"openai_key" json:"openai_key"`
     GroqKey string `db:"groq_key" json:"groq_key"`
 }
@@ -11,7 +11,7 @@ templ SideBarMenu(params SideBarMenuParams) {
             hx-target="this"
             hx-swap="beforeend"
             id="side-bar-menu"
-            class="side-bar-menu"
+            class="config-menu"
         >
             <label>OpenAI Key</label>
             <input type="password" name="openai-key" class="key-input" value={ params.OpenAIKey }></input>
@@ -32,4 +32,25 @@ templ SideBarMenu(params SideBarMenuParams) {
 
 templ SettingsUpdated() {
     <p class="update-alert" _="on load wait 2s remove me">Settings updated successfully!</p>
+}
+
+templ SearchMenu() {
+    <div id="side-bar-menu">
+        <form
+            hx-post="/search"
+            hx-target="#search-results"
+            hx-swap="innerHTML"
+            id="side-bar-menu"
+            class="search-menu"
+        >
+            <label>Search</label>
+            <input name="search-input" class="search-input"/>
+            <button
+                class="submit-search-button"
+            >
+                Search
+            </button>
+        </form>
+        <div id="search-results"/>
+    </div>
 }

@@ -24,12 +24,13 @@ var (
 func main() {
 	app := pocketbase.New()
 
+	// handle initial DB setup on first launch
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{Automigrate: true})
 
 	selectedModel := "openai"
 
-	// serve static files from public dir
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
+		// serve static files from public dir
 		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
 
 		var settings []templates.SideBarMenuParams
@@ -39,7 +40,6 @@ func main() {
 			All(&settings)
 		chatgptClient := openai.NewClient(settings[0].OpenAIKey)
 
-		// begin endpoints
 		e.Router.GET("/threads", func(c echo.Context) error {
 			return GetThreadList(c, app)
 		})
@@ -58,7 +58,6 @@ func main() {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
 			title := data["title"].(string)
-
 			return SaveThreadTitle(id, title, c, app)
 		})
 
@@ -80,11 +79,10 @@ func main() {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
 			return SaveTag(id, data, c, app)
-
 		})
 
 		e.Router.GET("/config", func(c echo.Context) error {
-			return GetConfig(c, app)
+			return OpenConfig(c, app)
 		})
 
 		e.Router.PUT("/config", func(c echo.Context) error {
@@ -94,6 +92,15 @@ func main() {
 
 		e.Router.GET("/config/done", func(c echo.Context) error {
 			return GetThreadList(c, app)
+		})
+
+		e.Router.GET("/search", func(c echo.Context) error {
+			return OpenSearch(c, app)
+		})
+
+		e.Router.POST("/search", func(c echo.Context) error {
+			data := apis.RequestInfo(c).Data
+			return Search(data, c, app)
 		})
 
 		// websocket connection:

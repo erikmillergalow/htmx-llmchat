@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
@@ -12,6 +13,27 @@ import (
 
 	"github.com/labstack/echo/v5"
 )
+
+func LoadThreadTags(id string, c echo.Context, app *pocketbase.PocketBase) ([]templates.TagParams, error) {
+	var threadTags []templates.TagParams
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
+	if err != nil {
+		return nil, c.String(http.StatusInternalServerError, "failed to fetch thread record")
+	}
+	if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
+		return nil, c.String(http.StatusInternalServerError, "failed to expand thread tags")
+	}
+	for _, expandedTag := range threadRecord.ExpandedAll("tags") {
+		fmt.Println(expandedTag)
+		threadTags = append(threadTags, templates.TagParams{
+			Value:    expandedTag.GetString("value"),
+			ThreadId: expandedTag.GetString("value"),
+			Color:    expandedTag.GetString("color"),
+			Id:       expandedTag.Id,
+		})
+	}
+	return threadTags, nil
+}
 
 func CreateTag(threadId string, c echo.Context) error {
 	c.Response().Writer.WriteHeader(200)

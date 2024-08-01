@@ -1,7 +1,7 @@
 package templates
 
 type ChatMessageParams struct {
-    Id string 
+    Id string
     ModelMessage string
     UserMessage string
     Model string
@@ -33,6 +33,7 @@ type LoadedMessageParams struct {
 //    Timestamp int
 //    Tags []string
     Sender string `db:"sender" json:"sender"`
+    ThreadId string `db:"thread_id" json:"thread_id"`
 }
 
 templ LoadedThread(messages []LoadedMessageParams) {
