@@ -87,7 +87,6 @@ func CreateThread(c echo.Context, app *pocketbase.PocketBase) error {
 		"last_message":           "Empty chat...",
 		"last_message_timestamp": newThreadRecord.Created,
 	})
-
 	if err := form.Submit(); err != nil {
 		fmt.Println("error creating new thread")
 		return c.String(http.StatusInternalServerError, "failed to create new thread DB entry")

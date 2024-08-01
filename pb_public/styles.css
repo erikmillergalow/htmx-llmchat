@@ -100,6 +100,12 @@ h3 {
     scrollbar-width: thin;
 }
 
+.side-bar-menu {
+    width: 100%;
+    height: 100%;
+    margin-top: 0.5rem;
+}
+
 .sidebar-icons-left {
     display: flex;
     flex-direction: row;
@@ -123,6 +129,44 @@ h3 {
 
 .apis-icon:hover {
     background-color: #9a9fa6;
+}
+
+.models-menu {
+    margin-top: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+}
+
+.model-editor {
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem;
+    margin-top: 0.25rem;
+    border-top: solid 0.75px #666;
+    border-bottom: solid 0.75px #666;
+    transition: 0.3s all;
+    border-radius: 5px;
+}
+
+.model-editor:hover {
+    background-color: #9a9fa6;
+}
+
+.model-input {
+    margin-bottom: 0.5rem;
+}
+
+.model-submit-button {
+    margin-top: 0.25rem;
+}
+
+.model-update-result {
+    margin-top: 0.5rem;
+    background-color: #e6f0f0;
+    padding: 0.75rem;
+    border-radius: 2rem;
 }
 
 .search-icon {
@@ -374,6 +418,7 @@ h3 {
 }
 
 .config-menu {
+    margin-top: 0.5rem;
     display: flex;
     flex-direction: column;
     width: 100%;

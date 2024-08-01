@@ -70,6 +70,20 @@ func main() {
 			return SelectModel(model, &selectedModel, c, app)
 		})
 
+		e.Router.GET("/models/open", func(c echo.Context) error {
+			return OpenModelEditor(c, app)
+		})
+
+		e.Router.POST("/models/create", func(c echo.Context) error {
+			return CreateModel(c, app)
+		})
+
+		e.Router.POST("/models/update/:modelId", func(c echo.Context) error {
+			id := c.PathParam("modelId")
+			data := apis.RequestInfo(c).Data
+			return UpdateModel(id, data, c, app)
+		})
+
 		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			return CreateTag(id, c)
