@@ -38,6 +38,31 @@
                                 <path d="M6 10h2v2H6zm0 4h2v2H6z"></path>
                             </svg>
                         </div>
+
+                        <div
+                            hx-get="http://127.0.0.1/apis"
+                            hx-trigger="click"
+                            hx-target="#sidebar-content"
+                            hx-swap="innerHTML"
+                        >
+                            <svg
+                                class="apis-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                style="
+                                    fill: rgba(0, 0, 0, 1);
+                                    transform:;
+                                    msfilter:;
+                                "
+                            >
+                                <path
+                                    d="M3 8h2v5c0 2.206 1.794 4 4 4h2v5h2v-5h2c2.206 0 4-1.794 4-4V8h2V6H3v2zm4-6h2v3H7zm8 0h2v3h-2z"
+                                ></path>
+                            </svg>
+                        </div>
+
                         <div
                             hx-get="http://127.0.0.1:8090/search"
                             hx-trigger="click"
@@ -60,6 +85,50 @@
                                     d="M10 18a7.952 7.952 0 0 0 4.897-1.688l4.396 4.396 1.414-1.414-4.396-4.396A7.952 7.952 0 0 0 18 10c0-4.411-3.589-8-8-8s-8 3.589-8 8 3.589 8 8 8zm0-14c3.309 0 6 2.691 6 6s-2.691 6-6 6-6-2.691-6-6 2.691-6 6-6z"
                                 ></path>
                             </svg>
+                        </div>
+
+                        <div id="sort-icon" class="sort-icon">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                style="
+                                    fill: rgba(0, 0, 0, 1);
+                                    transform:;
+                                    msfilter:;
+                                "
+                            >
+                                <path
+                                    d="M7 20h2V8h3L8 4 4 8h3zm13-4h-3V4h-2v12h-3l4 4z"
+                                ></path>
+                            </svg>
+                            <ul id="sort-select" class="sort-select">
+                                <li
+                                    hx-get="http://127.0.0.1:8090/sort/creation"
+                                    hx-trigger="click"
+                                    hx-target="#sidebar-content"
+                                    hx-swap="innerHTML"
+                                >
+                                    Sort by thread creation timestamp
+                                </li>
+                                <li
+                                    hx-get="http://127.0.0.1:8090/sort/interaction"
+                                    hx-trigger="click"
+                                    hx-target="#sidebar-content"
+                                    hx-swap="innerHTML"
+                                >
+                                    Sort by last message timestamp
+                                </li>
+                                <li
+                                    hx-get="http://127.0.0.1:8090/sort/az"
+                                    hx-trigger="click"
+                                    hx-target="#sidebar-content"
+                                    hx-swap="innerHTML"
+                                >
+                                    Sort alphabetically by title
+                                </li>
+                            </ul>
                         </div>
                     </div>
 
@@ -175,7 +244,6 @@
     <script>
         document.addEventListener("htmx:wsAfterMessage", (e) => {
             const messagesDiv = document.getElementById("chat-messages");
-
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
     </script>
@@ -183,6 +251,31 @@
         window.Split(["#left", "#right"], {
             sizes: [25, 75],
             gutterSize: 4,
+        });
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const sortIcon = document.getElementById("sort-icon");
+            const sortSelect = document.getElementById("sort-select");
+
+            // open sort dropdown menu
+            sortIcon.addEventListener("click", function (event) {
+                event.stopPropagation();
+                sortSelect.classList.toggle("show-sort-select");
+            });
+
+            // close if clicking outside of menu
+            window.addEventListener("click", function (event) {
+                console.log("event.target:", event.target);
+                if (!sortSelect.contains(event.target)) {
+                    sortSelect.classList.remove("show-sort-select");
+                }
+            });
+
+            // close after selecting
+            sortSelect.addEventListener("change", function () {
+                sortSelect.classList.remove("show-sort-select");
+            });
         });
     </script>
 </html>

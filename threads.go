@@ -14,12 +14,24 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 )
 
-func GetThreadList(c echo.Context, app *pocketbase.PocketBase) error {
+func GetThreadList(sortMethod string, c echo.Context, app *pocketbase.PocketBase) error {
 	var threads []templates.ThreadListEntryParams
+
+	sortBy := "created DESC"
+	switch sortMethod {
+	case "creation":
+		sortBy = "created DESC"
+	case "interaction":
+		sortBy = "last_message_timestamp DESC"
+	case "az":
+		sortBy = "thread_title ASC"
+	default:
+		sortBy = "created DESC"
+	}
 	app.Dao().DB().
 		Select("*").
 		From("chat_meta").
-		OrderBy("created DESC").
+		OrderBy(sortBy).
 		All(&threads)
 
 	var allTags [][]templates.TagParams

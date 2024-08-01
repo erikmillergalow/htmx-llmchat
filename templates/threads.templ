@@ -71,7 +71,9 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
 
         @ThreadTitle(params.Id, params.Title)
         <p class="thread-entry-model"> { params.Model } </p>
+
         <!-- <p class="thread-entry-message"> { params.LastMessage } </p> -->
+
         <div class="dual-timestamps-container">
             <p class="timestamp start">Created at: { types.DateTime.String(params.Created) } </p>
             <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>

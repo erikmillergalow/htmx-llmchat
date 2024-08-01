@@ -41,7 +41,7 @@ func main() {
 		chatgptClient := openai.NewClient(settings[0].OpenAIKey)
 
 		e.Router.GET("/threads", func(c echo.Context) error {
-			return GetThreadList(c, app)
+			return GetThreadList("creation", c, app)
 		})
 
 		e.Router.GET("/thread/:id", func(c echo.Context) error {
@@ -91,7 +91,12 @@ func main() {
 		})
 
 		e.Router.GET("/config/done", func(c echo.Context) error {
-			return GetThreadList(c, app)
+			return GetThreadList("creation", c, app)
+		})
+
+		e.Router.GET("/sort/:method", func(c echo.Context) error {
+			method := c.PathParam("method")
+			return GetThreadList(method, c, app)
 		})
 
 		e.Router.GET("/search", func(c echo.Context) error {
