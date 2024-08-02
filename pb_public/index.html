@@ -132,29 +132,59 @@
                         </div>
                     </div>
 
-                    <div
-                        hx-post="http://127.0.0.1:8090/thread/create"
-                        hx-trigger="click"
-                        hx-target="#sidebar-content"
-                        hx-swap="none"
-                    >
-                        <svg
-                            class="new-thread-icon"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            style="
-                                fill: rgba(0, 0, 0, 1);
-                                transform:;
-                                msfilter:;
-                            "
+                    <div class="sidebar-icons-right">
+                        <div
+                            hx-get="http://127.0.0.1:8090/threads"
+                            hx-trigger="click"
+                            hx-target="#sidebar-content"
                         >
-                            <path
-                                d="M16 2H8C4.691 2 2 4.691 2 8v13a1 1 0 0 0 1 1h13c3.309 0 6-2.691 6-6V8c0-3.309-2.691-6-6-6zm4 14c0 2.206-1.794 4-4 4H4V8c0-2.206 1.794-4 4-4h8c2.206 0 4 1.794 4 4v8z"
-                            ></path>
-                            <path d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4z"></path>
-                        </svg>
+                            <svg
+                                class="threads-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                style="
+                                    fill: rgba(0, 0, 0, 1);
+                                    transform:;
+                                    msfilter:;
+                                "
+                            >
+                                <path
+                                    d="M13 14h3.5c.827 0 1.5-.673 1.5-1.5v-9c0-.827-.673-1.5-1.5-1.5h-13C2.673 2 2 2.673 2 3.5V18l5.333-4H13zm-9-.1.154-.016L4 14v-.1z"
+                                ></path>
+                                <path
+                                    d="M20.5 8H20v6.001c0 1.1-.893 1.993-1.99 1.999H8v.5c0 .827.673 1.5 1.5 1.5h7.167L22 22V9.5c0-.827-.673-1.5-1.5-1.5z"
+                                ></path>
+                            </svg>
+                        </div>
+
+                        <div
+                            hx-post="http://127.0.0.1:8090/thread/create"
+                            hx-trigger="click"
+                            hx-target="#sidebar-content"
+                            hx-swap="none"
+                        >
+                            <svg
+                                class="new-thread-icon"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                style="
+                                    fill: rgba(0, 0, 0, 1);
+                                    transform:;
+                                    msfilter:;
+                                "
+                            >
+                                <path
+                                    d="M16 2H8C4.691 2 2 4.691 2 8v13a1 1 0 0 0 1 1h13c3.309 0 6-2.691 6-6V8c0-3.309-2.691-6-6-6zm4 14c0 2.206-1.794 4-4 4H4V8c0-2.206 1.794-4 4-4h8c2.206 0 4 1.794 4 4v8z"
+                                ></path>
+                                <path
+                                    d="M13 7h-2v4H7v2h4v4h2v-4h4v-2h-4z"
+                                ></path>
+                            </svg>
+                        </div>
                     </div>
                 </div>
                 <div
@@ -190,17 +220,13 @@
                         <p id="thread-title" class="thread-title">
                             Create or select thread from the sidebar
                         </p>
-                        <select
-                            hx-get="/model"
-                            hx-trigger="change"
+
+                        <div
+                            hx-get="http://127.0.0.1:8090/models"
+                            hx-trigger="load"
                             hx-target="this"
-                            hx-swap="afterend"
-                            name="model"
-                            class="model-select"
-                        >
-                            <option value="openai">OpenAI API</option>
-                            <option value="groq">Groq API</option>
-                        </select>
+                            hx-swap="outerHTML"
+                        ></div>
                     </div>
 
                     <!-- fill message history here, stream responses -->

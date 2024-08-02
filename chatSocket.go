@@ -21,7 +21,13 @@ import (
 	"github.com/pocketbase/pocketbase/tools/types"
 )
 
-func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.Context, app *pocketbase.PocketBase) error {
+type HTMXSocketMsg struct {
+	Headers  map[string]string `json:"HEADERS"`
+	Msg      string            `json:"new-message"`
+	ThreadId string            `json:"thread-id-chat"`
+}
+
+func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
 	fmt.Println("websocket triggered")
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
@@ -46,11 +52,6 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 		}
 		fmt.Printf("%s\n", msg)
 
-		type HTMXSocketMsg struct {
-			Headers  map[string]string `json:"HEADERS"`
-			Msg      string            `json:"new-message"`
-			ThreadId string            `json:"thread-id-chat"`
-		}
 		var htmxMsg HTMXSocketMsg
 		err = json.Unmarshal(msg, &htmxMsg)
 		if err != nil {
@@ -61,31 +62,41 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 
 		if htmxMsg.Msg != "" {
 
+			// fetch selected model config
+			userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+			if err != nil {
+				return err
+			}
+
+			selectedModelRecord, err := app.Dao().FindRecordById("models", userRecord.GetString("selected_model"))
+			if err != nil {
+				return err
+			}
+
 			// create message and response upserts
 			requestRecord := models.NewRecord(chatCollection)
 			form := forms.NewRecordUpsert(app, requestRecord)
 
+			// store message from human
 			form.LoadData(map[string]any{
 				"thread_id": htmxMsg.ThreadId,
 				"message":   htmxMsg.Msg,
 				"sender":    "human",
-				"model":     selectedModel,
+				"model":     selectedModelRecord.GetString("name"),
 			})
-
 			if err := form.Submit(); err != nil {
 				fmt.Printf("Failed to submit user message to chat DB: %v\n", err)
 				return err
 			}
-			// initialize new record for model, load data nd submit at end
-			modelRecord := models.NewRecord(chatCollection)
-			modelForm := forms.NewRecordUpsert(app, modelRecord)
 
+			// initialize new record for model, load data and submit at end
+			modelMessageRecord := models.NewRecord(chatCollection)
+			modelForm := forms.NewRecordUpsert(app, modelMessageRecord)
 			modelForm.LoadData(map[string]any{
 				"thread_id": htmxMsg.ThreadId,
 				"message":   "",
 				"sender":    "model",
 			})
-
 			if err := modelForm.Submit(); err != nil {
 				fmt.Printf("Failed to initialize model message in chat DB: %v\n", err)
 				return err
@@ -93,9 +104,9 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 
 			// send the initial response skeleton
 			chatParams := templates.ChatMessageParams{
-				Id:          modelRecord.Id,
+				Id:          modelMessageRecord.Id,
 				UserMessage: htmxMsg.Msg,
-				Model:       *selectedModel,
+				Model:       selectedModelRecord.GetString("name"),
 			}
 			chatComponent := templates.ChatMessage(chatParams)
 
@@ -115,8 +126,7 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 				return err
 			}
 
-			// begin OpenAI specific request
-			// get all chats from thread, create ChatCompletionMessage
+			// get all chats from thread, create ChatCompletionMessage so model has context
 			var messages []templates.LoadedMessageParams
 			app.Dao().DB().
 				Select("*").
@@ -146,18 +156,23 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 				From("settings").
 				All(&settings)
 
-			model := openai.GPT4
-			if *selectedModel == "groq" {
-				model = "llama3-70b-8192"
-				config := openai.DefaultConfig(settings[0].GroqKey)
-				config.BaseURL = "https://api.groq.com/openai/v1"
-				chatgptClient = openai.NewClientWithConfig(config)
-			} else {
-				chatgptClient = openai.NewClient(settings[0].OpenAIKey)
-			}
+			//model := openai.GPT4
+			// if *selectedModel == "groq" {
+			// 	model = "llama3-70b-8192"
+			// 	config := openai.DefaultConfig(settings[0].GroqKey)
+			// 	config.BaseURL = "https://api.groq.com/openai/v1"
+			// 	chatgptClient = openai.NewClientWithConfig(config)
+			// } else {
+			// 	chatgptClient = openai.NewClient(settings[0].OpenAIKey)
+			// }
+
+			//model = "Meta-Llama-3-8B-Instruct.Q8_0.gguf"
+			config := openai.DefaultConfig(selectedModelRecord.GetString("api_key"))
+			config.BaseURL = selectedModelRecord.GetString("url")
+			chatgptClient := openai.NewClientWithConfig(config)
 
 			req := openai.ChatCompletionRequest{
-				Model: model,
+				Model: selectedModelRecord.GetString("api_model_name"),
 				// MaxTokens: 20,
 				Messages: chatHistory,
 				Stream:   true,
@@ -186,7 +201,7 @@ func OpenChatSocket(selectedModel *string, chatgptClient *openai.Client, c echo.
 
 				fullResponse += response.Choices[0].Delta.Content
 
-				responseChunkComponent := templates.ChatStreamChunk(modelRecord.Id, response.Choices[0].Delta.Content)
+				responseChunkComponent := templates.ChatStreamChunk(modelMessageRecord.Id, response.Choices[0].Delta.Content)
 
 				var htmlBuf bytes.Buffer
 

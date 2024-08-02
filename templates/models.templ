@@ -13,6 +13,22 @@ templ SelectModelStatus(msg string) {
     <p class="select-model-status" _="on load wait 2s transition opacity to 0 then remove me">{ msg }</p>
 }
 
+templ ModelSelect(paramsList []ModelParams) {
+    <select
+        hx-get="/model"
+        hx-trigger="change"
+        hx-target="this"
+        hx-swap="afterend"
+        id="model-select"
+        name="model"
+        class="model-select"
+    >
+        for _, params := range paramsList {
+            <option value={ params.Id }>{ params.Name }</option>
+        }
+    </select>
+}
+
 templ NewModelEditor(params ModelParams) {
     <div
         id="model-editors-list"

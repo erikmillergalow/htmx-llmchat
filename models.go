@@ -13,6 +13,36 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 )
 
+func LoadModels(c echo.Context, app *pocketbase.PocketBase) error {
+	var modelEditorParams []templates.ModelParams
+
+	app.Dao().DB().
+		Select("*").
+		From("models").
+		OrderBy("name ASC").
+		All(&modelEditorParams)
+
+	// set first model in list for now, eventually use default model preference
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+
+	userRecord.Set("selected_model", modelEditorParams[0].Id)
+	if err := app.Dao().SaveRecord(userRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update user record selected model")
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	modelSelect := templates.ModelSelect(modelEditorParams)
+	err = modelSelect.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render model select")
+	}
+
+	return nil
+}
+
 func OpenModelEditor(c echo.Context, app *pocketbase.PocketBase) error {
 	var modelEditorParams []templates.ModelParams
 
@@ -102,26 +132,27 @@ func UpdateModel(id string, data map[string]any, c echo.Context, app *pocketbase
 	return nil
 }
 
-func SelectModel(model string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
-	if model == "openai" {
-		c.Response().Writer.WriteHeader(200)
-		selectModelStatus := templates.SelectModelStatus("Now chatting with OpenAI")
-		*selectedModel = "openai"
-		err := selectModelStatus.Render(context.Background(), c.Response().Writer)
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to render select model status")
-		}
-	} else if model == "groq" {
-		c.Response().Writer.WriteHeader(200)
-		selectModelStatus := templates.SelectModelStatus("Now chatting with Groq API")
-		err := selectModelStatus.Render(context.Background(), c.Response().Writer)
-		*selectedModel = "groq"
-		if err != nil {
-			return c.String(http.StatusInternalServerError, "failed to render select model status")
-		}
+func SelectModel(modelId string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
+	modelRecord, err := app.Dao().FindRecordById("models", modelId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve selected model record")
+	}
 
-	} else {
-		return c.String(http.StatusInternalServerError, "model not recognized")
+	// set selected model in users table
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+
+	userRecord.Set("selected_model", modelId)
+	if err := app.Dao().SaveRecord(userRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update user record selected model")
+	}
+
+	selectModelStatus := templates.SelectModelStatus("Now chatting with" + modelRecord.GetString("name"))
+	err = selectModelStatus.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render select model status")
 	}
 
 	return nil

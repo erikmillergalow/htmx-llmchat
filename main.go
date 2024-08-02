@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,7 +9,6 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
-	openai "github.com/sashabaranov/go-openai"
 
 	_ "github.com/erikmillergalow/htmx-llmchat/migrations"
 	"github.com/pocketbase/pocketbase"
@@ -38,7 +38,7 @@ func main() {
 			Select("*").
 			From("settings").
 			All(&settings)
-		chatgptClient := openai.NewClient(settings[0].OpenAIKey)
+		// chatgptClient := openai.NewClient(settings[0].OpenAIKey)
 
 		e.Router.GET("/threads", func(c echo.Context) error {
 			return GetThreadList("creation", c, app)
@@ -67,7 +67,12 @@ func main() {
 
 		e.Router.GET("/model", func(c echo.Context) error {
 			model := c.QueryParam("model")
+			fmt.Println(model)
 			return SelectModel(model, &selectedModel, c, app)
+		})
+
+		e.Router.GET("/models", func(c echo.Context) error {
+			return LoadModels(c, app)
 		})
 
 		e.Router.GET("/models/open", func(c echo.Context) error {
@@ -124,7 +129,7 @@ func main() {
 
 		// websocket connection:
 		e.Router.GET("/ws", func(c echo.Context) error {
-			return OpenChatSocket(&selectedModel, chatgptClient, c, app)
+			return OpenChatSocket(&selectedModel, c, app)
 		})
 
 		return nil
