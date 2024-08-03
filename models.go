@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
@@ -38,6 +40,76 @@ func LoadModels(c echo.Context, app *pocketbase.PocketBase) error {
 	err = modelSelect.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render model select")
+	}
+
+	return nil
+}
+
+type ApiNamesResponse struct {
+	Object string     `json:"object"`
+	Data   []ApiModel `json:"data"`
+}
+
+type ApiModel struct {
+	Id            string `json:"id"`
+	Object        string `json:"object"`
+	Created       int64  `json:"created"`
+	OwnedBy       string `json:"owned_by"`
+	Active        bool   `json:"active"`
+	ContextWindow int    `json:"context_window"`
+	PublicApps    any    `json:"public_apps"`
+}
+
+func ModelsUnavailableResponse(c echo.Context) error {
+	c.Response().Writer.WriteHeader(200)
+	noModels := templates.ApiModelsUnavailable()
+	err := noModels.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve models from API")
+	}
+
+	return nil
+}
+
+func LoadModelApiNames(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
+	modelRecord, err := app.Dao().FindRecordById("models", modelId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+
+	listModelsUrl := modelRecord.GetString("url") + "/models"
+	request, err := http.NewRequest("GET", listModelsUrl, nil)
+	request.Header.Add("Authorization", "Bearer "+modelRecord.GetString("api_key"))
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		return ModelsUnavailableResponse(c)
+	}
+	defer response.Body.Close()
+
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+
+		return c.String(http.StatusInternalServerError, "failed to read models endpoint response")
+	}
+
+	var data ApiNamesResponse
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read models endpoint response")
+	}
+
+	var modelNames []string
+	for _, model := range data.Data {
+		modelNames = append(modelNames, model.Id)
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	modelNamesSelect := templates.ApiModelSelect(modelNames)
+	err = modelNamesSelect.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve models from API")
 	}
 
 	return nil
@@ -153,6 +225,26 @@ func SelectModel(modelId string, selectedModel *string, c echo.Context, app *poc
 	err = selectModelStatus.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render select model status")
+	}
+
+	return nil
+}
+
+func DeleteModel(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
+	record, err := app.Dao().FindRecordById("models", modelId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve model record for deletion")
+	}
+
+	if err := app.Dao().DeleteRecord(record); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to delete model record")
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	deletedModel := templates.DeletedModel()
+	err = deletedModel.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render new model DB entry")
 	}
 
 	return nil

@@ -10,7 +10,12 @@ type ModelParams struct {
 }
 
 templ SelectModelStatus(msg string) {
-    <p class="select-model-status" _="on load wait 2s transition opacity to 0 then remove me">{ msg }</p>
+    <p
+        class="select-model-status"
+        _="on load wait 2s transition opacity to 0 then remove me"
+    >
+        { msg }
+    </p>
 }
 
 templ ModelSelect(paramsList []ModelParams) {
@@ -26,6 +31,28 @@ templ ModelSelect(paramsList []ModelParams) {
         for _, params := range paramsList {
             <option value={ params.Id }>{ params.Name }</option>
         }
+    </select>
+}
+
+templ ApiModelSelect(models []string) {
+    <select
+        id="api-model-name"
+        name="api-model-name"
+        class="model-names-select"
+    >
+    for _, model := range models {
+        <option value={ model }>{ model }</option>
+    }
+    </select>
+}
+
+templ ApiModelsUnavailable() {
+    <select
+        id="api-model-name"
+        name="api-model-name"
+        class="model-names-select"
+    >
+        <option value="">Unable to list models</option>
     </select>
 }
 
@@ -46,6 +73,30 @@ templ ModelEditor(params ModelParams) {
         id={ "model-editor-" + params.Id }
         class="model-editor"
     >
+        <div
+            class="delete-model"
+            hx-delete={ "/models/" + params.Id }
+            hx-trigger="click"
+            hx-target={ "#model-editor-" + params.Id }
+            hx-swap="outerHTML"
+        >
+            <svg
+                class="delete-model-icon"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                style="
+                    fill: rgba(0, 0, 0, 1);
+                    transform:;
+                    msfilter:;
+                "
+            >
+                <path
+                    d="M6 7H5v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7H6zm10.618-3L15 2H9L7.382 4H3v2h18V4z"
+                ></path>
+            </svg>
+        </div>
         <label class="model-label">Display name:</label>
         <input
             id={ "model-name-" + params.Id }
@@ -75,13 +126,12 @@ templ ModelEditor(params ModelParams) {
         ></input>
 
         <label class="model-label">API model name:</label>
-        <input
-            id={ "model-api-name-" + params.Id }
-            name="api-model-name"
-            class="model-input"
-            placeholder="Enter API-defined model name..."
-            value={ params.ApiModelName }
-        ></input>
+        <div
+            hx-get={ "/models/names/" + params.Id }
+            hx-trigger="load, click delay:500ms from:#model-submit-button"
+            hx-target="this"
+            hx-swap="innerHTML"
+        ></div>
 
         <label class="model-label">Color:</label>
         <input
@@ -93,6 +143,7 @@ templ ModelEditor(params ModelParams) {
         ></input>
 
         <button
+            id="model-submit-button"
             class="model-submit-button"
         >
             Update
@@ -126,4 +177,13 @@ templ ModelEditorsList(paramsList []ModelParams) {
             }
         </div>
     </div>
+}
+
+templ DeletedModel() {
+    <p
+        class="delete-model-status"
+        _="on load wait 2s transition opacity to 0 then remove me"
+    >
+        Model deleted...
+    </p>
 }

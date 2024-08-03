@@ -75,6 +75,16 @@ func main() {
 			return LoadModels(c, app)
 		})
 
+		e.Router.GET("/models/names/:modelId", func(c echo.Context) error {
+			id := c.PathParam("modelId")
+			return LoadModelApiNames(id, c, app)
+		})
+
+		e.Router.DELETE("/models/:modelId", func(c echo.Context) error {
+			id := c.PathParam("modelId")
+			return DeleteModel(id, c, app)
+		})
+
 		e.Router.GET("/models/open", func(c echo.Context) error {
 			return OpenModelEditor(c, app)
 		})
