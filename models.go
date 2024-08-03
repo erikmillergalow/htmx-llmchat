@@ -213,8 +213,8 @@ func UpdateApi(id string, data map[string]any, c echo.Context, app *pocketbase.P
 }
 
 // set current API
-func SelectApi(modelId string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
-	apiRecord, err := app.Dao().FindRecordById("apis", modelId)
+func SelectApi(id string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
+	apiRecord, err := app.Dao().FindRecordById("apis", id)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to retrieve selected api record")
 	}
@@ -225,7 +225,7 @@ func SelectApi(modelId string, selectedModel *string, c echo.Context, app *pocke
 		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
 	}
 
-	userRecord.Set("selected_api", modelId)
+	userRecord.Set("selected_api", id)
 	userRecord.Set("selected_model_name", "")
 	if err := app.Dao().SaveRecord(userRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update user record selected api")

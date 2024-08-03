@@ -20,12 +20,12 @@ templ SelectApiStatus(msg string) {
 
 templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
     <select
-        hx-get="/api"
+        hx-put="/api/select"
         hx-trigger="change"
         hx-target="this"
         hx-swap="afterend"
         id="api-select"
-        name="model"
+        name="api"
         class="api-select"
         value={ selectedApiId }
     >
@@ -42,7 +42,7 @@ templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
     </select>
     <div
         hx-post={ "/apis/models"}
-        hx-include="[name='model']"
+        hx-include="[name='api']"
         hx-trigger="load, refresh-models from:body"
         hx-target="this"
         hx-swap="innerHTML"
@@ -97,7 +97,7 @@ templ NewApiEditor(params ApiParams) {
 
 templ ApiEditor(params ApiParams) {
     <form
-        hx-post={ "/apis/update/" + params.Id}
+        hx-patch={ "/apis/update/" + params.Id}
         hx-target="this"
         hx-swap="beforeend"
         id={ "model-editor-" + params.Id }

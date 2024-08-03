@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -65,44 +64,51 @@ func main() {
 			return CreateThread(c, app)
 		})
 
-		e.Router.GET("/api", func(c echo.Context) error {
-			model := c.QueryParam("model")
-			fmt.Println(model)
-			return SelectApi(model, &selectedModel, c, app)
-		})
-
+		// load APIs for chat window dropdown
 		e.Router.GET("/apis", func(c echo.Context) error {
-			fmt.Println("triggered")
 			return LoadApis(c, app)
 		})
 
+		// select an API from chat window dropdown
+		e.Router.PUT("/api/select", func(c echo.Context) error {
+			//model := c.QueryParam("model")
+			data := apis.RequestInfo(c).Data
+			id := data["api"].(string)
+			return SelectApi(id, &selectedModel, c, app)
+		})
+
+		// attempt to load list of models an API provides
 		e.Router.POST("/apis/models", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
-			id := data["model"].(string)
-			fmt.Println(data)
+			id := data["api"].(string)
 			return LoadApiModels(id, c, app)
 		})
 
+		// select a model from chat window dropdown
 		e.Router.POST("/apis/model", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
 			name := data["api-model-name"].(string)
 			return SelectModel(name, c, app)
 		})
 
+		// open API editor in the sidebar
+		e.Router.GET("/apis/open", func(c echo.Context) error {
+			return OpenApiEditor(c, app)
+		})
+
+		// create new API in the sidebar
+		e.Router.POST("/apis/create", func(c echo.Context) error {
+			return CreateApi(c, app)
+		})
+
+		// delete an API in the sidebar
 		e.Router.DELETE("/apis/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			return DeleteApi(id, c, app)
 		})
 
-		e.Router.GET("/apis/open", func(c echo.Context) error {
-			return OpenApiEditor(c, app)
-		})
-
-		e.Router.POST("/apis/create", func(c echo.Context) error {
-			return CreateApi(c, app)
-		})
-
-		e.Router.POST("/apis/update/:id", func(c echo.Context) error {
+		// update existing API in the sidebar
+		e.Router.PATCH("/apis/update/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
 			return UpdateApi(id, data, c, app)
@@ -119,10 +125,12 @@ func main() {
 			return SaveTag(id, data, c, app)
 		})
 
+		// open confin
 		e.Router.GET("/config", func(c echo.Context) error {
 			return OpenConfig(c, app)
 		})
 
+		// update config
 		e.Router.PUT("/config", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
 			return SaveConfig(data, c, app)
