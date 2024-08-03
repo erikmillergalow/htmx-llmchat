@@ -143,12 +143,12 @@ func OpenApiEditor(c echo.Context, app *pocketbase.PocketBase) error {
 
 // create new API definition
 func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
-	modelsCollection, err := app.Dao().FindCollectionByNameOrId("apis")
+	apisCollection, err := app.Dao().FindCollectionByNameOrId("apis")
 	if err != nil {
 		fmt.Println("error reading api DB")
 	}
 
-	newApiRecord := models.NewRecord(modelsCollection)
+	newApiRecord := models.NewRecord(apisCollection)
 	form := forms.NewRecordUpsert(app, newApiRecord)
 
 	form.LoadData(map[string]any{

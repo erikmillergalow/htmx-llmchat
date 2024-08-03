@@ -196,80 +196,14 @@
                 ></div>
             </div>
 
-            <div id="right" class="chat-container">
-                <div class="chat-window" id="chat-window">
-                    <div class="chat-title-header">
-                        <div class="chat-header-left">
-                            <svg
-                                class="threads-icon"
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                style="
-                                    fill: rgba(0, 0, 0, 1);
-                                    transform:;
-                                    msfilter:;
-                                "
-                            >
-                                <path
-                                    d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"
-                                ></path>
-                                <path
-                                    d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"
-                                ></path>
-                            </svg>
-                            <p id="thread-title" class="thread-title">
-                                Create or select thread from the sidebar
-                            </p>
-                        </div>
-
-                        <div
-                            id="chat-api-select"
-                            class="chat-api-select"
-                            hx-get="http://127.0.0.1:8090/apis"
-                            hx-trigger="load, refresh-apis from:body"
-                            hx-target="this"
-                            hx-swap="innerHTML"
-                        ></div>
-                    </div>
-
-                    <!-- fill message history here, stream responses -->
-                    <div class="messages-container" id="chat-messages"></div>
-                </div>
-
-                <div
-                    class="input-container"
-                    hx-ext="ws"
-                    ws-connect="http://127.0.0.1:8090/ws"
-                    hx-on:htmx:ws-after-send="document.querySelector('#sender-form').reset()"
-                >
-                    <form
-                        id="sender-form"
-                        class="send-message-form"
-                        ws-send
-                        hx-trigger="keyup[keyCode==13]"
-                        hx-on::after-request="console.log('after')"
-                    >
-                        <input
-                            id="thread-id-chat"
-                            name="thread-id-chat"
-                            type="hidden"
-                        />
-                        <textarea
-                            disabled
-                            form="sender-form"
-                            id="message-input"
-                            name="new-message"
-                            class="message-input"
-                            placeholder="Enter prompt..."
-                        ></textarea>
-                        <button ws-send class="send-message-button">
-                            Send
-                        </button>
-                    </form>
-                </div>
-            </div>
+            <div
+                hx-get="/chat"
+                hx-trigger="load, refresh-apis from:body"
+                hx-target="this"
+                hx-swap="innerHTML"
+                id="right"
+                class="chat-container"
+            ></div>
         </div>
     </body>
     <script>
