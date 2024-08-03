@@ -106,7 +106,6 @@ func CreateThread(c echo.Context, app *pocketbase.PocketBase) error {
 		Created:              newThreadRecord.Created,
 	}
 
-	// return thread, target threads-list, swap beforestart (or whatever the top is
 	c.Response().Writer.WriteHeader(200)
 	newThread := templates.NewThreadListEntry(threadParams)
 	err = newThread.Render(context.Background(), c.Response().Writer)

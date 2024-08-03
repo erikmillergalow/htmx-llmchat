@@ -37,6 +37,16 @@ templ NewTagEditor(id string) {
                 name="color"
             ></input>
         </div>
-        <button type="submit" id="send-button" class="add-tag-button">Add tag</button>
+
+        <div class="tag-editor-buttons">
+            <button
+                _="on click halt the event remove #new-tag-editor"
+                id="cancel-button"
+                class="cancel-tag-button"
+            >
+                Cancel
+            </button>
+            <button type="submit" id="send-button" class="add-tag-button">Submit</button>
+        </div>
     </form>
 }

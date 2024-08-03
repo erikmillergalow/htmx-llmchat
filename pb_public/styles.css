@@ -164,6 +164,7 @@ h3 {
     font-size: 15px;
     margin-bottom: 0.5rem;
     border-radius: 5px;
+    border-width: 0;
 }
 
 .model-label {
@@ -199,7 +200,8 @@ h3 {
 
 .model-names-select {
     width: 100%;
-    margin-bottom: 0.5rem
+    margin-left: 0.25rem;
+    margin-right: 0.25rem;
 }
 
 .model-update-result {
@@ -220,7 +222,7 @@ h3 {
 }
 
 .sort-icon {
-    margin-left: 1rem;
+    margin-right: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
 }
@@ -300,6 +302,7 @@ h3 {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
+    align-items: center;
     width: 100%;
 }
 
@@ -308,7 +311,9 @@ h3 {
     flex-direction: row;
 }
 
-.thread-title {}
+.thread-title {
+    margin-left: 0.5rem;
+}
 
 .title-edit {
     width: 100%;
@@ -490,6 +495,7 @@ h3 {
 }
 
 .search-menu {
+    margin-top: 0.5rem;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -497,8 +503,11 @@ h3 {
 }
 
 .search-input {
+    font-size: 15px;
     margin-top: 0.5rem;
-    width: 100%;
+    margin-bottom: 0.5rem;
+    border-radius: 5px;
+    border-width: 0;
 }
 
 .search-submit-button {

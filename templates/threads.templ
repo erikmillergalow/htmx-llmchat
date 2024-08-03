@@ -83,8 +83,8 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
             <p
                 hx-get={ "/thread/tag/" + params.Id }
                 hx-trigger="click consume"
-                hx-target={ "#" + params.Id }
-                hx-swap="beforeend"
+                hx-target={ "#tag-editor-" + params.Id }
+                hx-swap="innerHTML"
                 class="tag"
             >
                 tag +
@@ -92,6 +92,9 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
             for _, tag := range threadTags {
                 <p class={ "tag", tagStyle(tag.Color) }> { tag.Value } </p>
             }
+        </div>
+        <div id={ "tag-editor-" + params.Id }>
+
         </div>
     </div>
 }
@@ -128,7 +131,6 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
             ></div>
         </div>
 
-        <!-- fill message history here, stream responses -->
         <div class="messages-container" id="chat-messages">
 
         </div>
