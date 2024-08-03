@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
 
-	_ "github.com/erikmillergalow/htmx-llmchat/migrations"
+	//_ "github.com/erikmillergalow/htmx-llmchat/migrations"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/apis"
 	"github.com/pocketbase/pocketbase/core"
@@ -37,7 +37,6 @@ func main() {
 			Select("*").
 			From("settings").
 			All(&settings)
-		// chatgptClient := openai.NewClient(settings[0].OpenAIKey)
 
 		e.Router.GET("/threads", func(c echo.Context) error {
 			return GetThreadList("creation", c, app)

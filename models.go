@@ -167,6 +167,19 @@ func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
 		return c.String(http.StatusInternalServerError, "failed to create new api DB entry")
 	}
 
+	// if first API setup then automatically set user's selected_api id
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record to set API id")
+	}
+
+	if userRecord.GetString("selected_api") == "" {
+		userRecord.Set("selected_api", newApiRecord.Id)
+		if err := app.Dao().SaveRecord(userRecord); err != nil {
+			return c.String(http.StatusInternalServerError, "failed to initialize user's selected API id")
+		}
+	}
+
 	apiParams := templates.ApiParams{
 		Id:           newApiRecord.Id,
 		Name:         "",
