@@ -306,7 +306,7 @@ h3 {
     display: flex;
     flex-direction: column;
     background-color: #b1c7ba;
-    padding: 0.5rem;
+    padding: 0.25rem;
 }
 
 .chat-title-header {
@@ -603,6 +603,7 @@ h3 {
 .chat-api-select {
     display: flex;
     flex-direction: row;
+    margin-right: 0.25rem;
 }
 
 .select-model-status {
