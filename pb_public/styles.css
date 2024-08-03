@@ -299,12 +299,16 @@ h3 {
 .chat-title-header {
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     width: 100%;
 }
 
-.thread-title {
-    margin-left: 0.5rem;
+.chat-header-left {
+    display: flex;
+    flex-direction: row;
 }
+
+.thread-title {}
 
 .title-edit {
     width: 100%;
@@ -502,8 +506,11 @@ h3 {
     width: 100%;
 }
 
-.model-select {
-    margin-left: auto;
+.api-select {}
+
+.chat-api-select {
+    display: flex;
+    flex-direction: row;
 }
 
 .select-model-status {

@@ -15,36 +15,7 @@ import (
 	"github.com/pocketbase/pocketbase/models"
 )
 
-func LoadModels(c echo.Context, app *pocketbase.PocketBase) error {
-	var modelEditorParams []templates.ModelParams
-
-	app.Dao().DB().
-		Select("*").
-		From("models").
-		OrderBy("name ASC").
-		All(&modelEditorParams)
-
-	// set first model in list for now, eventually use default model preference
-	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
-	}
-
-	userRecord.Set("selected_model", modelEditorParams[0].Id)
-	if err := app.Dao().SaveRecord(userRecord); err != nil {
-		return c.String(http.StatusInternalServerError, "failed to update user record selected model")
-	}
-
-	c.Response().Writer.WriteHeader(200)
-	modelSelect := templates.ModelSelect(modelEditorParams)
-	err = modelSelect.Render(context.Background(), c.Response().Writer)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render model select")
-	}
-
-	return nil
-}
-
+// types for parsing API /models endpoint response
 type ApiNamesResponse struct {
 	Object string     `json:"object"`
 	Data   []ApiModel `json:"data"`
@@ -60,6 +31,32 @@ type ApiModel struct {
 	PublicApps    any    `json:"public_apps"`
 }
 
+// populate the chat API select
+func LoadApis(c echo.Context, app *pocketbase.PocketBase) error {
+	var apiEditorParams []templates.ApiParams
+
+	app.Dao().DB().
+		Select("*").
+		From("apis").
+		OrderBy("name ASC").
+		All(&apiEditorParams)
+
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+	selectedApiId := userRecord.GetString("selected_api")
+
+	c.Response().Writer.WriteHeader(200)
+	modelSelect := templates.ApiSelect(selectedApiId, apiEditorParams)
+	err = modelSelect.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render model select")
+	}
+
+	return nil
+}
+
 func ModelsUnavailableResponse(c echo.Context) error {
 	c.Response().Writer.WriteHeader(200)
 	noModels := templates.ApiModelsUnavailable()
@@ -71,15 +68,16 @@ func ModelsUnavailableResponse(c echo.Context) error {
 	return nil
 }
 
-func LoadModelApiNames(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
-	modelRecord, err := app.Dao().FindRecordById("models", modelId)
+// populate the chat model select
+func LoadApiModels(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
+	apiRecord, err := app.Dao().FindRecordById("apis", modelId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
 	}
 
-	listModelsUrl := modelRecord.GetString("url") + "/models"
+	listModelsUrl := apiRecord.GetString("url") + "/models"
 	request, err := http.NewRequest("GET", listModelsUrl, nil)
-	request.Header.Add("Authorization", "Bearer "+modelRecord.GetString("api_key"))
+	request.Header.Add("Authorization", "Bearer "+apiRecord.GetString("api_key"))
 
 	client := &http.Client{}
 	response, err := client.Do(request)
@@ -105,8 +103,16 @@ func LoadModelApiNames(modelId string, c echo.Context, app *pocketbase.PocketBas
 		modelNames = append(modelNames, model.Id)
 	}
 
+	// set selected model in users table
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record for selected model name")
+	}
+
+	selectedModelName := userRecord.GetString("selected_model_name")
+
 	c.Response().Writer.WriteHeader(200)
-	modelNamesSelect := templates.ApiModelSelect(modelNames)
+	modelNamesSelect := templates.ApiModelSelect(selectedModelName, modelNames)
 	err = modelNamesSelect.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to retrieve models from API")
@@ -115,17 +121,18 @@ func LoadModelApiNames(modelId string, c echo.Context, app *pocketbase.PocketBas
 	return nil
 }
 
-func OpenModelEditor(c echo.Context, app *pocketbase.PocketBase) error {
-	var modelEditorParams []templates.ModelParams
+// open the API editor in the sidebar
+func OpenApiEditor(c echo.Context, app *pocketbase.PocketBase) error {
+	var apiEditorParams []templates.ApiParams
 
 	app.Dao().DB().
 		Select("*").
-		From("models").
+		From("apis").
 		OrderBy("created DESC").
-		All(&modelEditorParams)
+		All(&apiEditorParams)
 
 	c.Response().Writer.WriteHeader(200)
-	modelEditor := templates.ModelEditorsList(modelEditorParams)
+	modelEditor := templates.ApiEditorsList(apiEditorParams)
 	err := modelEditor.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render model editor")
@@ -134,15 +141,15 @@ func OpenModelEditor(c echo.Context, app *pocketbase.PocketBase) error {
 	return nil
 }
 
-func CreateModel(c echo.Context, app *pocketbase.PocketBase) error {
-	fmt.Println("New model!")
-	modelsCollection, err := app.Dao().FindCollectionByNameOrId("models")
+// create new API definition
+func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
+	modelsCollection, err := app.Dao().FindCollectionByNameOrId("apis")
 	if err != nil {
-		fmt.Println("error reading models DB")
+		fmt.Println("error reading api DB")
 	}
 
-	newModelRecord := models.NewRecord(modelsCollection)
-	form := forms.NewRecordUpsert(app, newModelRecord)
+	newApiRecord := models.NewRecord(modelsCollection)
+	form := forms.NewRecordUpsert(app, newApiRecord)
 
 	form.LoadData(map[string]any{
 		"name":           "",
@@ -152,16 +159,16 @@ func CreateModel(c echo.Context, app *pocketbase.PocketBase) error {
 		"color":          "",
 	})
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to create new models DB record")
+		return c.String(http.StatusInternalServerError, "failed to create new api DB record")
 	}
 
 	if err := form.Submit(); err != nil {
 		fmt.Println("error creating new model")
-		return c.String(http.StatusInternalServerError, "failed to create new model DB entry")
+		return c.String(http.StatusInternalServerError, "failed to create new api DB entry")
 	}
 
-	modelParams := templates.ModelParams{
-		Id:           newModelRecord.Id,
+	apiParams := templates.ApiParams{
+		Id:           newApiRecord.Id,
 		Name:         "",
 		Url:          "",
 		ApiKey:       "",
@@ -170,44 +177,46 @@ func CreateModel(c echo.Context, app *pocketbase.PocketBase) error {
 	}
 
 	c.Response().Writer.WriteHeader(200)
-	newModel := templates.NewModelEditor(modelParams)
+	newModel := templates.NewApiEditor(apiParams)
 	err = newModel.Render(context.Background(), c.Response().Writer)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render new model DB entry")
+		return c.String(http.StatusInternalServerError, "failed to render new api DB entry")
 	}
 
 	return nil
 }
 
-func UpdateModel(id string, data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
-	modelRecord, err := app.Dao().FindRecordById("models", id)
+// update API definition
+func UpdateApi(id string, data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
+	apiRecord, err := app.Dao().FindRecordById("apis", id)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to find model record")
+		return c.String(http.StatusInternalServerError, "failed to find api record")
 	}
 
-	modelRecord.Set("name", data["display-name"].(string))
-	modelRecord.Set("url", data["url"].(string))
-	modelRecord.Set("api_key", data["api-key"].(string))
-	modelRecord.Set("api_model_name", data["api-model-name"].(string))
-	modelRecord.Set("color", data["color"].(string))
+	apiRecord.Set("name", data["display-name"].(string))
+	apiRecord.Set("url", data["url"].(string))
+	apiRecord.Set("api_key", data["api-key"].(string))
+	apiRecord.Set("color", data["color"].(string))
 
-	if err := app.Dao().SaveRecord(modelRecord); err != nil {
-		return c.String(http.StatusInternalServerError, "failed to update model record")
+	if err := app.Dao().SaveRecord(apiRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update api record")
 	}
 
-	modelUpdateResult := templates.ModelUpdateResult()
-	err = modelUpdateResult.Render(context.Background(), c.Response().Writer)
+	c.Response().Header().Set("HX-Trigger", "refresh-apis")
+	apiUpdateResult := templates.ModelUpdateResult()
+	err = apiUpdateResult.Render(context.Background(), c.Response().Writer)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render model update result")
+		return c.String(http.StatusInternalServerError, "failed to render api update result")
 	}
 
 	return nil
 }
 
-func SelectModel(modelId string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
-	modelRecord, err := app.Dao().FindRecordById("models", modelId)
+// set current API
+func SelectApi(modelId string, selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
+	apiRecord, err := app.Dao().FindRecordById("apis", modelId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to retrieve selected model record")
+		return c.String(http.StatusInternalServerError, "failed to retrieve selected api record")
 	}
 
 	// set selected model in users table
@@ -216,13 +225,35 @@ func SelectModel(modelId string, selectedModel *string, c echo.Context, app *poc
 		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
 	}
 
-	userRecord.Set("selected_model", modelId)
+	userRecord.Set("selected_api", modelId)
+	userRecord.Set("selected_model_name", "")
 	if err := app.Dao().SaveRecord(userRecord); err != nil {
-		return c.String(http.StatusInternalServerError, "failed to update user record selected model")
+		return c.String(http.StatusInternalServerError, "failed to update user record selected api")
 	}
 
-	selectModelStatus := templates.SelectModelStatus("Now chatting with" + modelRecord.GetString("name"))
-	err = selectModelStatus.Render(context.Background(), c.Response().Writer)
+	c.Response().Header().Set("HX-Trigger", "refresh-models")
+	SelectApiStatus := templates.SelectApiStatus("Now chatting using " + apiRecord.GetString("name"))
+	err = SelectApiStatus.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render select api status")
+	}
+
+	return nil
+}
+
+func SelectModel(selectedModel string, c echo.Context, app *pocketbase.PocketBase) error {
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+
+	userRecord.Set("selected_model_name", selectedModel)
+	if err := app.Dao().SaveRecord(userRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update user record selected api")
+	}
+
+	SelectApiStatus := templates.SelectApiStatus("Now chatting with " + selectedModel)
+	err = SelectApiStatus.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render select model status")
 	}
@@ -230,21 +261,22 @@ func SelectModel(modelId string, selectedModel *string, c echo.Context, app *poc
 	return nil
 }
 
-func DeleteModel(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
-	record, err := app.Dao().FindRecordById("models", modelId)
+// delete API definition
+func DeleteApi(modelId string, c echo.Context, app *pocketbase.PocketBase) error {
+	record, err := app.Dao().FindRecordById("apis", modelId)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to retrieve model record for deletion")
+		return c.String(http.StatusInternalServerError, "failed to retrieve api record for deletion")
 	}
 
 	if err := app.Dao().DeleteRecord(record); err != nil {
-		return c.String(http.StatusInternalServerError, "failed to delete model record")
+		return c.String(http.StatusInternalServerError, "failed to delete api record")
 	}
 
 	c.Response().Writer.WriteHeader(200)
-	deletedModel := templates.DeletedModel()
-	err = deletedModel.Render(context.Background(), c.Response().Writer)
+	deletedApi := templates.DeletedModel()
+	err = deletedApi.Render(context.Background(), c.Response().Writer)
 	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render new model DB entry")
+		return c.String(http.StatusInternalServerError, "failed to render new api DB entry")
 	}
 
 	return nil

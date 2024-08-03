@@ -65,38 +65,47 @@ func main() {
 			return CreateThread(c, app)
 		})
 
-		e.Router.GET("/model", func(c echo.Context) error {
+		e.Router.GET("/api", func(c echo.Context) error {
 			model := c.QueryParam("model")
 			fmt.Println(model)
-			return SelectModel(model, &selectedModel, c, app)
+			return SelectApi(model, &selectedModel, c, app)
 		})
 
-		e.Router.GET("/models", func(c echo.Context) error {
-			return LoadModels(c, app)
+		e.Router.GET("/apis", func(c echo.Context) error {
+			fmt.Println("triggered")
+			return LoadApis(c, app)
 		})
 
-		e.Router.GET("/models/names/:modelId", func(c echo.Context) error {
-			id := c.PathParam("modelId")
-			return LoadModelApiNames(id, c, app)
-		})
-
-		e.Router.DELETE("/models/:modelId", func(c echo.Context) error {
-			id := c.PathParam("modelId")
-			return DeleteModel(id, c, app)
-		})
-
-		e.Router.GET("/models/open", func(c echo.Context) error {
-			return OpenModelEditor(c, app)
-		})
-
-		e.Router.POST("/models/create", func(c echo.Context) error {
-			return CreateModel(c, app)
-		})
-
-		e.Router.POST("/models/update/:modelId", func(c echo.Context) error {
-			id := c.PathParam("modelId")
+		e.Router.POST("/apis/models", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
-			return UpdateModel(id, data, c, app)
+			id := data["model"].(string)
+			fmt.Println(data)
+			return LoadApiModels(id, c, app)
+		})
+
+		e.Router.POST("/apis/model", func(c echo.Context) error {
+			data := apis.RequestInfo(c).Data
+			name := data["api-model-name"].(string)
+			return SelectModel(name, c, app)
+		})
+
+		e.Router.DELETE("/apis/:id", func(c echo.Context) error {
+			id := c.PathParam("id")
+			return DeleteApi(id, c, app)
+		})
+
+		e.Router.GET("/apis/open", func(c echo.Context) error {
+			return OpenApiEditor(c, app)
+		})
+
+		e.Router.POST("/apis/create", func(c echo.Context) error {
+			return CreateApi(c, app)
+		})
+
+		e.Router.POST("/apis/update/:id", func(c echo.Context) error {
+			id := c.PathParam("id")
+			data := apis.RequestInfo(c).Data
+			return UpdateApi(id, data, c, app)
 		})
 
 		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {

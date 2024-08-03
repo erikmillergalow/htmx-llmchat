@@ -1,6 +1,6 @@
 package templates
 
-type ModelParams struct {
+type ApiParams struct {
     Id string `db:"id" json:"id"`
     Name string `db:"name" json:"name"`
     Url string `db:"url" json:"url"`
@@ -9,7 +9,7 @@ type ModelParams struct {
     Color string `db:"color" json:"color"`
 }
 
-templ SelectModelStatus(msg string) {
+templ SelectApiStatus(msg string) {
     <p
         class="select-model-status"
         _="on load wait 2s transition opacity to 0 then remove me"
@@ -18,30 +18,60 @@ templ SelectModelStatus(msg string) {
     </p>
 }
 
-templ ModelSelect(paramsList []ModelParams) {
+templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
     <select
-        hx-get="/model"
+        hx-get="/api"
         hx-trigger="change"
         hx-target="this"
         hx-swap="afterend"
-        id="model-select"
+        id="api-select"
         name="model"
-        class="model-select"
+        class="api-select"
+        value={ selectedApiId }
     >
         for _, params := range paramsList {
-            <option value={ params.Id }>{ params.Name }</option>
+            if params.Id == selectedApiId {
+                <option value={ params.Id }>{ params.Name }</option>
+            }
+        }
+        for _, params := range paramsList {
+            if params.Id != selectedApiId {
+                <option value={ params.Id }>{ params.Name }</option>
+            }
         }
     </select>
+    <div
+        hx-post={ "/apis/models"}
+        hx-include="[name='model']"
+        hx-trigger="load, refresh-models from:body"
+        hx-target="this"
+        hx-swap="innerHTML"
+    ></div>
 }
 
-templ ApiModelSelect(models []string) {
+templ ApiModelSelect(selectedModelName string, models []string) {
     <select
+        hx-post="/apis/model"
+        hx-trigger="change"
+        hx-target="this"
+        hx-swap="afterend"
         id="api-model-name"
         name="api-model-name"
         class="model-names-select"
+        value={ selectedModelName }
     >
+    if selectedModelName == "" {
+        <option value="">Select model</option>
+    }
     for _, model := range models {
-        <option value={ model }>{ model }</option>
+        if model == selectedModelName {
+            <option value={ model }>{ model }</option>
+        }
+    }
+    for _, model := range models {
+        if model != selectedModelName {
+            <option value={ model }>{ model }</option>
+        }
     }
     </select>
 }
@@ -56,18 +86,18 @@ templ ApiModelsUnavailable() {
     </select>
 }
 
-templ NewModelEditor(params ModelParams) {
+templ NewApiEditor(params ApiParams) {
     <div
         id="model-editors-list"
         hx-swap-oob="afterbegin"
     >
-        @ModelEditor(params)
+        @ApiEditor(params)
     </div>
 }
 
-templ ModelEditor(params ModelParams) {
+templ ApiEditor(params ApiParams) {
     <form
-        hx-post={ "/models/update/" + params.Id}
+        hx-post={ "/apis/update/" + params.Id}
         hx-target="this"
         hx-swap="beforeend"
         id={ "model-editor-" + params.Id }
@@ -75,7 +105,7 @@ templ ModelEditor(params ModelParams) {
     >
         <div
             class="delete-model"
-            hx-delete={ "/models/" + params.Id }
+            hx-delete={ "/apis/" + params.Id }
             hx-trigger="click"
             hx-target={ "#model-editor-" + params.Id }
             hx-swap="outerHTML"
@@ -125,14 +155,6 @@ templ ModelEditor(params ModelParams) {
             value={ params.ApiKey }
         ></input>
 
-        <label class="model-label">API model name:</label>
-        <div
-            hx-get={ "/models/names/" + params.Id }
-            hx-trigger="load, click delay:500ms from:#model-submit-button"
-            hx-target="this"
-            hx-swap="innerHTML"
-        ></div>
-
         <label class="model-label">Color:</label>
         <input
             id={ "model-color" + params.Id }
@@ -160,10 +182,10 @@ templ ModelUpdateResult() {
     </p>
 }
 
-templ ModelEditorsList(paramsList []ModelParams) {
+templ ApiEditorsList(paramsList []ApiParams) {
     <div class="models-menu">
         <button
-            hx-post="/models/create"
+            hx-post="/apis/create"
             hx-trigger="click"
             hx-target="#model-editors-list"
             hx-swap="none"
@@ -173,7 +195,7 @@ templ ModelEditorsList(paramsList []ModelParams) {
         </button>
         <div id="model-editors-list">
             for _, params := range paramsList {
-                @ModelEditor(params)
+                @ApiEditor(params)
             }
         </div>
     </div>

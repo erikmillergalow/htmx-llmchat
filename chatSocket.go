@@ -68,9 +68,14 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				return err
 			}
 
-			selectedModelRecord, err := app.Dao().FindRecordById("models", userRecord.GetString("selected_model"))
+			selectedModelRecord, err := app.Dao().FindRecordById("apis", userRecord.GetString("selected_api"))
 			if err != nil {
 				return err
+			}
+
+			chatModelName := selectedModelRecord.GetString("name")
+			if userRecord.GetString("selected_model_name") != "" {
+				chatModelName = chatModelName + "-" + userRecord.GetString("selected_model_name")
 			}
 
 			// create message and response upserts
@@ -82,7 +87,7 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				"thread_id": htmxMsg.ThreadId,
 				"message":   htmxMsg.Msg,
 				"sender":    "human",
-				"model":     selectedModelRecord.GetString("name"),
+				"model":     chatModelName,
 			})
 			if err := form.Submit(); err != nil {
 				fmt.Printf("Failed to submit user message to chat DB: %v\n", err)
@@ -106,7 +111,7 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 			chatParams := templates.ChatMessageParams{
 				Id:          modelMessageRecord.Id,
 				UserMessage: htmxMsg.Msg,
-				Model:       selectedModelRecord.GetString("name"),
+				Model:       chatModelName,
 			}
 			chatComponent := templates.ChatMessage(chatParams)
 
@@ -156,23 +161,12 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				From("settings").
 				All(&settings)
 
-			//model := openai.GPT4
-			// if *selectedModel == "groq" {
-			// 	model = "llama3-70b-8192"
-			// 	config := openai.DefaultConfig(settings[0].GroqKey)
-			// 	config.BaseURL = "https://api.groq.com/openai/v1"
-			// 	chatgptClient = openai.NewClientWithConfig(config)
-			// } else {
-			// 	chatgptClient = openai.NewClient(settings[0].OpenAIKey)
-			// }
-
-			//model = "Meta-Llama-3-8B-Instruct.Q8_0.gguf"
 			config := openai.DefaultConfig(selectedModelRecord.GetString("api_key"))
 			config.BaseURL = selectedModelRecord.GetString("url")
 			chatgptClient := openai.NewClientWithConfig(config)
 
 			req := openai.ChatCompletionRequest{
-				Model: selectedModelRecord.GetString("api_model_name"),
+				Model: userRecord.GetString("selected_model_name"),
 				// MaxTokens: 20,
 				Messages: chatHistory,
 				Stream:   true,
@@ -220,8 +214,6 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 					return err
 				}
 			}
-
-			// *** move above into own package
 
 			// record model message in DB
 			modelForm.LoadData(map[string]any{
