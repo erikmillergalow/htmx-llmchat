@@ -34,7 +34,7 @@ templ SettingsUpdated() {
     <p class="update-alert" _="on load wait 2s remove me">Settings updated successfully!</p>
 }
 
-templ SearchMenu() {
+templ SearchMenu(tagParams []TagParams, models []string) {
     <div id="side-bar-menu">
         <form
             hx-post="/search"
@@ -43,8 +43,25 @@ templ SearchMenu() {
             id="side-bar-menu"
             class="search-menu"
         >
-            <label>Search</label>
-            <input name="search-input" class="search-input"/>
+            <div class="search-text-row">
+                <label class="search-input-label">Search:</label>
+                <input name="search-input" class="search-input"/>
+            </div>
+
+            <select class="search-filter" name="tag">
+                <option value="any">All tags</option>
+                for _, tag := range tagParams {
+                    <option value={ tag.Id }> { tag.Value } </option>
+                }
+            </select>
+
+            <select class="search-filter" name="model">
+                <option value="any">All used models</option>
+                for _, model := range models {
+                    <option value={ model }> { model } </option>
+                }
+            </select>
+
             <button
                 class="submit-search-button"
             >

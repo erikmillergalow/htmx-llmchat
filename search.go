@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
 
@@ -13,8 +14,27 @@ import (
 )
 
 func OpenSearch(c echo.Context, app *pocketbase.PocketBase) error {
+	var allTagParams []templates.TagParams
+	app.Dao().DB().
+		Select("*").
+		From("tags").
+		OrderBy("created DESC").
+		All(&allTagParams)
+
+	var allChatParams []templates.LoadedMessageParams
+	app.Dao().DB().
+		Select("*").
+		From("chat").
+		OrderBy("created DESC").
+		All(&allChatParams)
+
+	var usedModels []string
+	for _, message := range allChatParams {
+		usedModels = append(usedModels, message.Model)
+	}
+
 	c.Response().Writer.WriteHeader(200)
-	searchMenu := templates.SearchMenu()
+	searchMenu := templates.SearchMenu(allTagParams, usedModels)
 	err := searchMenu.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render search menu")
@@ -26,8 +46,9 @@ func OpenSearch(c echo.Context, app *pocketbase.PocketBase) error {
 func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
 	fmt.Println("searching")
 	searchValue := data["search-input"].(string)
+	tagFilter := data["tag"].(string)
+	modelFilter := data["model"].(string)
 
-	// var relevantMessageIds []string
 	var relevantMessages []templates.LoadedMessageParams
 	app.Dao().DB().
 		Select("*").
@@ -36,32 +57,30 @@ func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) err
 		OrderBy("created ASC").
 		All(&relevantMessages)
 
-	fmt.Println(relevantMessages)
-
 	var relevantMessageIds []string
 	for _, message := range relevantMessages {
-		relevantMessageIds = append(relevantMessageIds, message.ThreadId)
+		if modelFilter == "any" || modelFilter == message.Model {
+			relevantMessageIds = append(relevantMessageIds, message.ThreadId)
+		}
 	}
-
-	fmt.Println(relevantMessageIds)
 
 	var relevantThreadRecords, err = app.Dao().FindRecordsByIds("chat_meta", relevantMessageIds)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to fetch threads relevant to search")
 	}
 
-	fmt.Println(relevantThreadRecords)
-
 	// convert slice of records to struct templ expects, need to check for better ways to handle this...
 	var relevantThreads []templates.ThreadListEntryParams
 	for _, record := range relevantThreadRecords {
-		thread := templates.ThreadListEntryParams{
-			Id:                   record.GetString("id"),
-			Title:                record.GetString("thread_title"),
-			LastMessageTimestamp: record.GetDateTime("last_message_timestamp"),
-			Created:              record.GetDateTime("created"),
+		if tagFilter == "any" || slices.Contains(record.GetStringSlice("tags"), tagFilter) {
+			thread := templates.ThreadListEntryParams{
+				Id:                   record.GetString("id"),
+				Title:                record.GetString("thread_title"),
+				LastMessageTimestamp: record.GetDateTime("last_message_timestamp"),
+				Created:              record.GetDateTime("created"),
+			}
+			relevantThreads = append(relevantThreads, thread)
 		}
-		relevantThreads = append(relevantThreads, thread)
 	}
 
 	var allTags [][]templates.TagParams
