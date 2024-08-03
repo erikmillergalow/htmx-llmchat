@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
 
@@ -107,6 +108,8 @@ func AddExistingTagToThread(threadId string, tagId string, c echo.Context, app *
 		return c.String(http.StatusInternalServerError, "failed to read thread DB")
 	}
 
+	tagExists := slices.Contains(threadRecord.GetStringSlice("tags"), tagId)
+
 	threadRecord.Set("tags", append(threadRecord.GetStringSlice("tags"), tagId))
 	if err = app.Dao().SaveRecord(threadRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to add existing tag to thread")
@@ -125,10 +128,19 @@ func AddExistingTagToThread(threadId string, tagId string, c echo.Context, app *
 	}
 
 	c.Response().Writer.WriteHeader(200)
-	newTag := templates.NewTag(tagParams)
-	err = newTag.Render(context.Background(), c.Response().Writer)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render tag editor")
+
+	if tagExists {
+		noNewTag := templates.TagExists()
+		err = noNewTag.Render(context.Background(), c.Response().Writer)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to render tag editor")
+		}
+	} else {
+		newTag := templates.NewTag(tagParams)
+		err = newTag.Render(context.Background(), c.Response().Writer)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to render tag editor")
+		}
 	}
 
 	return nil

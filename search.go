@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"slices"
 
@@ -44,18 +43,25 @@ func OpenSearch(c echo.Context, app *pocketbase.PocketBase) error {
 }
 
 func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
-	fmt.Println("searching")
 	searchValue := data["search-input"].(string)
 	tagFilter := data["tag"].(string)
 	modelFilter := data["model"].(string)
 
 	var relevantMessages []templates.LoadedMessageParams
-	app.Dao().DB().
-		Select("*").
-		From("chat").
-		Where(dbx.Like("message", searchValue)).
-		OrderBy("created ASC").
-		All(&relevantMessages)
+	if searchValue != "" {
+		app.Dao().DB().
+			Select("*").
+			From("chat").
+			Where(dbx.Like("message", searchValue)).
+			OrderBy("created ASC").
+			All(&relevantMessages)
+	} else {
+		app.Dao().DB().
+			Select("*").
+			From("chat").
+			OrderBy("created ASC").
+			All(&relevantMessages)
+	}
 
 	var relevantMessageIds []string
 	for _, message := range relevantMessages {

@@ -7,6 +7,10 @@ type TagParams struct {
     Color string `db:"color" json:"color"`
 }
 
+templ TagExists() {
+    <div id="new-tag-editor" hx-swap-oob="delete"></div>
+}
+
 templ NewTag(params TagParams) {
     <div id={ "tags-" + params.ThreadId } hx-oob-swap="beforeend">
         <p class={ "tag", tagStyle(params.Color) }> { params.Value } </p>
@@ -67,7 +71,7 @@ templ NewTagEditor(threadId string, paramsList []TagParams) {
                     hx-post={ "/thread/" + threadId + "/tag/" + tag.Id }
                     hx-target={ "#tags-" + threadId }
                     hx-swap="beforeend"
-                    class={ "tag", tagStyle(tag.Color) }
+                    class={ "existing-tag", tagStyle(tag.Color) }
                 >
                     { tag.Value }
                 </p>

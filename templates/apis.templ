@@ -105,12 +105,13 @@ templ ApiEditor(params ApiParams) {
     >
         <div
             class="delete-model"
-            hx-delete={ "/apis/" + params.Id }
-            hx-trigger="click"
-            hx-target={ "#model-editor-" + params.Id }
-            hx-swap="outerHTML"
         >
+            <label class="model-label">Display name:</label>
             <svg
+                hx-delete={ "/apis/" + params.Id }
+                hx-trigger="click"
+                hx-target={ "#model-editor-" + params.Id }
+                hx-swap="outerHTML"
                 class="delete-model-icon"
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -127,7 +128,6 @@ templ ApiEditor(params ApiParams) {
                 ></path>
             </svg>
         </div>
-        <label class="model-label">Display name:</label>
         <input
             id={ "model-name-" + params.Id }
             name="display-name"
