@@ -14,14 +14,67 @@ templ NewTag(params TagParams) {
     <div id="new-tag-editor" hx-swap-oob="delete"></div>
 }
 
-templ NewTagEditor(id string) {
+templ TagEditor(params TagParams) {
     <form
         id="new-tag-editor"
         class="new-tag-editor"
-        hx-post={ "/thread/tag/" + id }
-        hx-target={ "#tags-" + id }
+        hx-post={ "/thread/tag/" + params.Id }
+        hx-target={ "#tags-" + params.Id }
         hx-swap="beforeend"
     >
+        <div class="add-tag-input-row">
+            <input
+                class="tag-value-input"
+                type="text"
+                placeholder="Enter tag name..."
+                name="value"
+                value={ params.Id }
+            ></input>
+            <input
+                class="tag-color-input"
+                type="color"
+                placeholder="Enter tag name..."
+                name="color"
+                value={ params.Color }
+            ></input>
+        </div>
+
+        <div class="tag-editor-buttons">
+            <button
+                _="on click halt the event remove #new-tag-editor"
+                id="cancel-button"
+                class="cancel-tag-button"
+            >
+                Cancel
+            </button>
+            <button type="submit" id="send-button" class="add-tag-button">Submit</button>
+        </div>
+    </form>
+}
+
+templ NewTagEditor(threadId string, paramsList []TagParams) {
+    <form
+        id="new-tag-editor"
+        class="new-tag-editor"
+        hx-post={ "/thread/tag/" + threadId }
+        hx-target={ "#tags-" + threadId }
+        hx-swap="beforeend"
+    >
+        <label class="tag-editor-label">Select existing:</label>
+        <div class="existing-tags-container">
+            for _, tag := range paramsList {
+                <p
+                    hx-post={ "/thread/" + threadId + "/tag/" + tag.Id }
+                    hx-target={ "#tags-" + threadId }
+                    hx-swap="beforeend"
+                    class={ "tag", tagStyle(tag.Color) }
+                >
+                    { tag.Value }
+                </p>
+            }
+        </div>
+
+        <label class="tag-editor-label">Create new tag:</label>
         <div class="add-tag-input-row">
             <input
                 class="tag-value-input"
@@ -35,6 +88,7 @@ templ NewTagEditor(id string) {
                 type="color"
                 placeholder="Enter tag name..."
                 name="color"
+                value="#77767b"
             ></input>
         </div>
 
@@ -46,7 +100,7 @@ templ NewTagEditor(id string) {
             >
                 Cancel
             </button>
-            <button type="submit" id="send-button" class="add-tag-button">Submit</button>
+            <button type="submit" id="send-button" class="add-tag-button">Create tag</button>
         </div>
     </form>
 }

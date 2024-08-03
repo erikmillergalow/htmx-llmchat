@@ -169,7 +169,7 @@ h3 {
 
 .model-label {
     font-size: 13px;
-    margin-left: 0.5rem;
+    margin-left: 0.25rem;
 }
 
 .delete-model {
@@ -391,7 +391,7 @@ h3 {
 }
 
 .thread-list-entry {
-    padding: 0.5rem;
+    padding: 0.25rem;
     margin-top: 0.25rem;
     border-top: solid 0.75px #666;
     border-bottom: solid 0.75px #666;
@@ -460,17 +460,51 @@ h3 {
     display: flex;
     flex-direction: column;
     margin-top: 0.5rem;
+
+    padding: 0.25rem;
+    border-top: solid 0.75px #666;
+    border-bottom: solid 0.75px #666;
+    border-radius: 5px;
 }
 
 .add-tag-input-row {
     display: flex;
+    flex-direction: row;
+}
+
+.tag-editor-label {
+    font-size: 13px;
 }
 
 .tag-value-input {
-    width: 100%
+    width: 100%;
+    font-size: 15px;
+    border-radius: 5px;
+    border-width: 0;
+    margin-right: 0.25rem;
 }
 
-.tag-color-input {}
+.existing-tags-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+.tag-color-input {
+    height: 1.5rem;
+}
+
+.tag-editor-buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.cancel-tag-button {
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+}
 
 .add-tag-button {
     margin-top: 0.25rem;

@@ -220,7 +220,7 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				"thread_id": htmxMsg.ThreadId,
 				"message":   fullResponse,
 				"sender":    "model",
-				"model":     selectedModel,
+				"model":     chatModelName,
 			})
 
 			if err := modelForm.Submit(); err != nil {

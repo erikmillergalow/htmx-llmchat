@@ -121,13 +121,19 @@ func main() {
 
 		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
-			return CreateTag(id, c)
+			return CreateTag(id, c, app)
 		})
 
 		e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
 			return SaveTag(id, data, c, app)
+		})
+
+		e.Router.POST("/thread/:threadId/tag/:tagId", func(c echo.Context) error {
+			threadId := c.PathParam("threadId")
+			tagId := c.PathParam("tagId")
+			return AddExistingTagToThread(threadId, tagId, c, app)
 		})
 
 		// open confin

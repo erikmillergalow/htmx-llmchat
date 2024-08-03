@@ -35,9 +35,16 @@ func LoadThreadTags(id string, c echo.Context, app *pocketbase.PocketBase) ([]te
 	return threadTags, nil
 }
 
-func CreateTag(threadId string, c echo.Context) error {
+func CreateTag(threadId string, c echo.Context, app *pocketbase.PocketBase) error {
+	var allTagParams []templates.TagParams
+	app.Dao().DB().
+		Select("*").
+		From("tags").
+		OrderBy("value ASC").
+		All(&allTagParams)
+
 	c.Response().Writer.WriteHeader(200)
-	tagEditor := templates.NewTagEditor(threadId)
+	tagEditor := templates.NewTagEditor(threadId, allTagParams)
 	err := tagEditor.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render tag editor")
@@ -82,6 +89,39 @@ func SaveTag(id string, data map[string]any, c echo.Context, app *pocketbase.Poc
 		Value:    value,
 		ThreadId: id,
 		Color:    color,
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	newTag := templates.NewTag(tagParams)
+	err = newTag.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render tag editor")
+	}
+
+	return nil
+}
+
+func AddExistingTagToThread(threadId string, tagId string, c echo.Context, app *pocketbase.PocketBase) error {
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", threadId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to read thread DB")
+	}
+
+	threadRecord.Set("tags", append(threadRecord.GetStringSlice("tags"), tagId))
+	if err = app.Dao().SaveRecord(threadRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to add existing tag to thread")
+	}
+
+	tagRecord, err := app.Dao().FindRecordById("tags", tagId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find tag record to add to thread")
+	}
+
+	tagParams := templates.TagParams{
+		Id:       tagRecord.Id,
+		Value:    tagRecord.GetString("value"),
+		ThreadId: threadId,
+		Color:    tagRecord.GetString("color"),
 	}
 
 	c.Response().Writer.WriteHeader(200)
