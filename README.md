@@ -1,4 +1,9 @@
 # htmx-llmchat
 
-mkdir model && cd model
-wget -O llama-2-7b-model.gguf https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q6_K.gguf?download=true
+### run tauri dev 
+
+npm run tauri dev
+
+### tauri build for distibution
+
+npm run tauri build
