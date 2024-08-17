@@ -78,6 +78,7 @@ h3 {
     display: flex;
     height: 100vh;
     background-color: gray;
+    overflow-y: hidden;
 }
 
 .threads-sidebar {
@@ -104,6 +105,7 @@ h3 {
     height: 100%;
     overflow: scroll;
     scrollbar-width: thin;
+    scrollbar-color: #666 transparent;
 }
 
 .side-bar-menu {
@@ -335,6 +337,7 @@ h3 {
     flex-direction: column;
     overflow: scroll;
     scrollbar-width: thin;
+    scrollbar-color: #666 transparent;
 }
 
 .chat-message {
