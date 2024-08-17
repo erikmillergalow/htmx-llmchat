@@ -2,7 +2,7 @@
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
     "beforeBuildCommand": "",
-    "beforeDevCommand": "$(go env GOPATH)/bin/templ generate && go build -o ./bin/main . && ./bin/main serve",
+    "beforeDevCommand": "$(go env GOPATH)/bin/templ generate && go build -o ./src-tauri/binaries/main-aarch64-apple-darwin .",
     "devPath": "http://127.0.0.1:8090",
     "distDir": "pb_public"
   },
@@ -12,7 +12,18 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false
+      "shell": {
+        "sidecar": true,
+        "scope": [
+          { 
+            "name": "binaries/main",
+            "sidecar": true,
+            "args": [
+              "serve"
+            ]
+          }
+        ]
+      }
     },
     "bundle": {
       "active": true,
@@ -21,7 +32,9 @@
       "deb": {
         "depends": []
       },
-      "externalBin": [],
+      "externalBin": [
+        "binaries/main"
+      ],
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
@@ -29,7 +42,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.htmxllmchat.dev",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
