@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
 
@@ -29,6 +30,18 @@ type HTMXSocketMsg struct {
 
 func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.PocketBase) error {
 	fmt.Println("websocket triggered")
+	
+	var upgrader = websocket.Upgrader{
+       CheckOrigin: func(r *http.Request) bool {
+           // Allow all connections by returning true.
+           // For better security, you can specify conditions here.
+           return true
+
+           // Example for specific origin:
+           // return r.Header.Get("Origin") == "tauri://localhost"
+       },
+   }
+	
 	ws, err := upgrader.Upgrade(c.Response(), c.Request(), nil)
 	if err != nil {
 		fmt.Println("websocket upgrade failed")

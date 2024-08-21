@@ -15,7 +15,7 @@ type ThreadListEntryParams struct {
 
 templ ThreadTitleEditor(id string, currentTitle string) {
     <input
-        hx-put={ "/thread/title/" + id }
+        hx-put={ "http://127.0.0.1:8090/thread/title/" + id }
         hx-trigger="blur, keyup[keyCode==13]"
         hx-target="this"
         hx-swap="outerHTML"
@@ -32,7 +32,7 @@ templ ThreadTitleEditor(id string, currentTitle string) {
 templ ThreadTitle(id string, title string) {
     <div
         hx-trigger="click consume"
-        hx-get={ "/thread/title/" + id }
+        hx-get={ "http://127.0.0.1:8090/thread/title/" + id }
         hx-target="this"
         hx-swap="outerHTML"
     >
@@ -59,7 +59,7 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
     <div
         id={ params.Id }
         class="thread-list-entry"
-        hx-get={ "/thread/" + params.Id }
+        hx-get={ "http://127.0.0.1:8090/thread/" + params.Id }
         hx-trigger="click"
         hx-target="#chat-messages"
         if isNew {
@@ -81,7 +81,7 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
 
         <div id={ "tags-" + params.Id } class="tags-container">
             <p
-                hx-get={ "/thread/tag/" + params.Id }
+                hx-get={ "http://127.0.0.1:8090/thread/tag/" + params.Id }
                 hx-trigger="click consume"
                 hx-target={ "#tag-editor-" + params.Id }
                 hx-swap="innerHTML"

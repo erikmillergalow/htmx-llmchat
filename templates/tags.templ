@@ -22,7 +22,7 @@ templ TagEditor(params TagParams) {
     <form
         id="new-tag-editor"
         class="new-tag-editor"
-        hx-post={ "/thread/tag/" + params.Id }
+        hx-post={ "http://127.0.0.1:8090/thread/tag/" + params.Id }
         hx-target={ "#tags-" + params.Id }
         hx-swap="beforeend"
     >
@@ -60,7 +60,7 @@ templ NewTagEditor(threadId string, paramsList []TagParams) {
     <form
         id="new-tag-editor"
         class="new-tag-editor"
-        hx-post={ "/thread/tag/" + threadId }
+        hx-post={ "http://127.0.0.1:8090/thread/tag/" + threadId }
         hx-target={ "#tags-" + threadId }
         hx-swap="beforeend"
     >
@@ -68,7 +68,7 @@ templ NewTagEditor(threadId string, paramsList []TagParams) {
         <div class="existing-tags-container">
             for _, tag := range paramsList {
                 <p
-                    hx-post={ "/thread/" + threadId + "/tag/" + tag.Id }
+                    hx-post={ "http://127.0.0.1:8090/thread/" + threadId + "/tag/" + tag.Id }
                     hx-target={ "#tags-" + threadId }
                     hx-swap="beforeend"
                     class={ "existing-tag", tagStyle(tag.Color) }

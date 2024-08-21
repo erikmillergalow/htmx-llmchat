@@ -7,7 +7,7 @@ type SideBarMenuParams struct {
 
 templ SideBarMenu(params SideBarMenuParams) {
         <form
-            hx-put="/config"
+            hx-put="http://127.0.0.1:8090/config"
             hx-target="this"
             hx-swap="beforeend"
             id="side-bar-menu"
@@ -19,7 +19,7 @@ templ SideBarMenu(params SideBarMenuParams) {
             <input type="password" name="groq-key" class="key-input" value={ params.GroqKey }></input>
             <button class="keys-submit-button">Save</button>
             <button
-                hx-get="/config/done"
+                hx-get="http://127.0.0.1:8090/config/done"
                 hx-target="#side-bar-menu"
                 hx-swap="outerHTML"
                 hx-trigger="click"
@@ -37,7 +37,7 @@ templ SettingsUpdated() {
 templ SearchMenu(tagParams []TagParams, models []string) {
     <div id="side-bar-menu">
         <form
-            hx-post="/search"
+            hx-post="http://127.0.0.1:8090/search"
             hx-target="#search-results"
             hx-swap="innerHTML"
             id="side-bar-menu"

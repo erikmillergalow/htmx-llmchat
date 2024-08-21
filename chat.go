@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
@@ -21,8 +20,6 @@ func InitializeChat(c echo.Context, app *pocketbase.PocketBase) error {
 		All(&apiEditorParams)
 
 	c.Response().Writer.WriteHeader(200)
-	fmt.Println("len apis")
-	fmt.Println(len(apiEditorParams))
 	if len(apiEditorParams) == 0 {
 		noApisInfo := templates.NoApisAvailable()
 		err := noApisInfo.Render(context.Background(), c.Response().Writer)

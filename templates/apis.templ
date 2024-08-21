@@ -20,7 +20,7 @@ templ SelectApiStatus(msg string) {
 
 templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
     <select
-        hx-put="/api/select"
+        hx-put="http://127.0.0.1:8090/api/select"
         hx-trigger="change"
         hx-target="this"
         hx-swap="afterend"
@@ -41,7 +41,7 @@ templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
         }
     </select>
     <div
-        hx-post={ "/apis/models"}
+        hx-post={ "http://127.0.0.1:8090/apis/models"}
         hx-include="[name='api']"
         hx-trigger="load, refresh-models from:body"
         hx-target="this"
@@ -51,7 +51,7 @@ templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
 
 templ ApiModelSelect(selectedModelName string, models []string) {
     <select
-        hx-post="/apis/model"
+        hx-post="http://127.0.0.1:8090/apis/model"
         hx-trigger="change"
         hx-target="this"
         hx-swap="afterend"
@@ -97,7 +97,7 @@ templ NewApiEditor(params ApiParams) {
 
 templ ApiEditor(params ApiParams) {
     <form
-        hx-patch={ "/apis/update/" + params.Id}
+        hx-patch={ "http://127.0.0.1:8090/apis/update/" + params.Id}
         hx-target="this"
         hx-swap="beforeend"
         id={ "model-editor-" + params.Id }
@@ -108,7 +108,7 @@ templ ApiEditor(params ApiParams) {
         >
             <label class="model-label">Display name:</label>
             <svg
-                hx-delete={ "/apis/" + params.Id }
+                hx-delete={ "http://127.0.0.1:8090/apis/" + params.Id }
                 hx-trigger="click"
                 hx-target={ "#model-editor-" + params.Id }
                 hx-swap="outerHTML"
@@ -185,7 +185,7 @@ templ ModelUpdateResult() {
 templ ApiEditorsList(paramsList []ApiParams) {
     <div class="models-menu">
         <button
-            hx-post="/apis/create"
+            hx-post="http://127.0.0.1:8090/apis/create"
             hx-trigger="click"
             hx-target="#model-editors-list"
             hx-swap="none"
