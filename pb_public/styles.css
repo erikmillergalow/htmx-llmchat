@@ -39,6 +39,10 @@ button {
     font-size: 14px;
 }
 
+code: {
+    border-radius: 5px;
+}
+
 p,
 h1,
 h2,
@@ -51,6 +55,11 @@ h6 {
 
 h3 {
     font-size: 16px;
+}
+
+ol,
+li {
+    white-space: normal;
 }
 
 #root,

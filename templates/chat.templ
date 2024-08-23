@@ -1,133 +1,124 @@
 package templates
 
 type ChatMessageParams struct {
-    Id string
-    ModelMessage string
-    UserMessage string
-    Model string
-//    Timestamp int
-//    Tags []string
-    Sender string
+	Id           string
+	ModelMessage string
+	UserMessage  string
+	Model        string
+	// Timestamp int
+	// Tags []string
+	Sender string
 }
 
 templ ChatMessage(params ChatMessageParams) {
-    <div id="chat-messages" hx-swap-oob="beforeend">
-        <div class="chat-message from-user">
-            <div class="chat-message-model">user:</div>
-            { params.UserMessage }
-        </div>
-        <div id={ "response-" + params.Id } class="chat-message from-model">
-            <div class="chat-message-model">{ params.Model }:</div>
-        </div>
-    </div>
+	<div id="chat-messages" hx-swap-oob="beforeend">
+		<div class="chat-message from-user">
+			<div class="chat-message-model">user:</div>
+			{ params.UserMessage }
+		</div>
+		<div id={ "response-" + params.Id } class="chat-message from-model">
+			<div class="chat-message-model">{ params.Model }:</div>
+			<div id={ "response-content-" + params.Id }></div>
+		</div>
+	</div>
 }
 
 templ ChatStreamChunk(id string, chunk string) {
-    <div id={"response-" + id } hx-swap-oob="beforeend"> { chunk } </div>
+	<div id={ "response-content-" + id } hx-swap-oob="beforeend">{ chunk } </div>
 }
 
 type LoadedMessageParams struct {
-    Id string `db:"id" json:"id"`
-    Message string `db:"message" json:"message"`
-    Model string `db:"model" json:"model"`
-//    Timestamp int
-//    Tags []string
-    Sender string `db:"sender" json:"sender"`
-    ThreadId string `db:"thread_id" json:"thread_id"`
+	Id      string `db:"id" json:"id"`
+	Message string `db:"message" json:"message"`
+	Model   string `db:"model" json:"model"`
+	// Timestamp int
+	// Tags []string
+	Sender   string `db:"sender" json:"sender"`
+	ThreadId string `db:"thread_id" json:"thread_id"`
 }
 
 templ LoadedThread(messages []LoadedMessageParams) {
-   for _, message := range messages {
-       if (message.Sender == "human") {
-            <div class="chat-message from-user">
-                <div class="chat-message-model"><i>user:</i></div>
-                { message.Message }
-            </div>
-       } else if (message.Sender == "model") {
-            <div id={ message.Id } class="chat-message from-model">
-                <div class="chat-message-model"><i>{ message.Model }:</i></div>
-                { message.Message }
-            </div>
-       }
-   }
+	for _, message := range messages {
+		if (message.Sender == "human") {
+			<div class="chat-message from-user">
+				<div class="chat-message-model"><i>user:</i></div>
+				{ message.Message }
+			</div>
+		} else if (message.Sender == "model") {
+			<div id={ message.Id } class="chat-message from-model">
+				<div class="chat-message-model"><i>{ message.Model }:</i></div>
+				<div id={ "response-content-" + message.Id }>{ message.Message }</div>
+			</div>
+		}
+	}
 }
 
 templ NoApisAvailable() {
-    <div class="initial-window" id="initial-window">
-    </div>
+	<div class="initial-window" id="initial-window"></div>
 }
 
 templ ActiveChat() {
-    <div class="chat-window" id="chat-window">
-        <div class="chat-title-header">
-            <div class="chat-header-left">
-                <svg
-                    class="threads-icon"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    style="
+	<div class="chat-window" id="chat-window">
+		<div class="chat-title-header">
+			<div class="chat-header-left">
+				<svg
+					class="threads-icon"
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					style="
                         fill: rgba(0, 0, 0, 1);
                         transform:;
                         msfilter:;
                     "
-                >
-                    <path
-                        d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"
-                    ></path>
-                    <path
-                        d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"
-                    ></path>
-                </svg>
-                <p id="thread-title" class="thread-title">
-                    Create or select thread from the sidebar
-                </p>
-            </div>
-
-            <div
-                id="chat-api-select"
-                class="chat-api-select"
-                hx-get="http://127.0.0.1:8090/apis"
-                hx-trigger="load, refresh-apis from:body"
-                hx-target="this"
-                hx-swap="innerHTML"
-            ></div>
-        </div>
-
-        <!-- fill message history here, stream responses -->
-        <div class="messages-container" id="chat-messages"></div>
-    </div>
-
-    <div
-        class="input-container"
-        hx-ext="ws"
-        ws-connect="http://127.0.0.1:8090/ws"
-        hx-on:htmx:ws-after-send="document.querySelector('#sender-form').reset()"
-    >
-        <form
-            id="sender-form"
-            class="send-message-form"
-            ws-send
-            hx-trigger="keyup[keyCode==13]"
-            hx-on::after-request="console.log('after')"
-        >
-            <input
-                id="thread-id-chat"
-                name="thread-id-chat"
-                type="hidden"
-            />
-            <textarea
-                disabled
-                form="sender-form"
-                id="message-input"
-                name="new-message"
-                class="message-input"
-                placeholder="Enter prompt..."
-            ></textarea>
-            <button ws-send class="send-message-button">
-                Send
-            </button>
-        </form>
-    </div>
+				>
+					<path
+						d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"
+					></path>
+					<path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path>
+				</svg>
+				<p id="thread-title" class="thread-title">
+					Create or select thread from the sidebar
+				</p>
+			</div>
+			<div
+				id="chat-api-select"
+				class="chat-api-select"
+				hx-get="http://127.0.0.1:8090/apis"
+				hx-trigger="load, refresh-apis from:body"
+				hx-target="this"
+				hx-swap="innerHTML"
+			></div>
+		</div>
+		<!-- fill message history here, stream responses -->
+		<div class="messages-container" id="chat-messages"></div>
+	</div>
+	<div
+		class="input-container"
+		hx-ext="ws"
+		ws-connect="http://127.0.0.1:8090/ws"
+		hx-on:htmx:ws-after-send="document.querySelector('#sender-form').reset()"
+	>
+		<form
+			id="sender-form"
+			class="send-message-form"
+			ws-send
+			hx-trigger="keyup[keyCode==13]"
+			hx-on::after-request="console.log('after')"
+		>
+			<input id="thread-id-chat" name="thread-id-chat" type="hidden"/>
+			<textarea
+				disabled
+				form="sender-form"
+				id="message-input"
+				name="new-message"
+				class="message-input"
+				placeholder="Enter prompt..."
+			></textarea>
+			<button ws-send class="send-message-button">
+				Send
+			</button>
+		</form>
+	</div>
 }

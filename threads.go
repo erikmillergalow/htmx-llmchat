@@ -64,6 +64,7 @@ func GetThread(id string, c echo.Context, app *pocketbase.PocketBase) error {
 		Where(dbx.NewExp("thread_id = {:id}", dbx.Params{"id": id})).
 		All(&messages)
 
+	c.Response().Header().Set("HX-Trigger-After-Settle", "format-thread-markdown")
 	c.Response().Writer.WriteHeader(200)
 	loadedChat := templates.LoadedThread(messages)
 	err := loadedChat.Render(context.Background(), c.Response().Writer)
