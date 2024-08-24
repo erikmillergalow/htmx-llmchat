@@ -91,9 +91,9 @@ func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) err
 
 	var allTags [][]templates.TagParams
 	for _, thread := range relevantThreads {
-		threadTags, err := LoadThreadTags(thread.Id, c, app)
+		threadTags, err := LoadThreadTags(thread.Id, app)
 		if err != nil {
-			return err
+			return c.String(http.StatusInternalServerError, "failed to fetch thread tags")
 		}
 		allTags = append(allTags, threadTags)
 	}

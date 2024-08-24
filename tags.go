@@ -15,14 +15,14 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-func LoadThreadTags(id string, c echo.Context, app *pocketbase.PocketBase) ([]templates.TagParams, error) {
+func LoadThreadTags(id string, app *pocketbase.PocketBase) ([]templates.TagParams, error) {
 	var threadTags []templates.TagParams
 	threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
 	if err != nil {
-		return nil, c.String(http.StatusInternalServerError, "failed to fetch thread record")
+		return nil, fmt.Errorf("failed to fetch thread record: %w", err)
 	}
 	if errs := app.Dao().ExpandRecord(threadRecord, []string{"tags"}, nil); len(errs) > 0 {
-		return nil, c.String(http.StatusInternalServerError, "failed to expand thread tags")
+		return nil, fmt.Errorf("failed to expand thread tags")
 	}
 	for _, expandedTag := range threadRecord.ExpandedAll("tags") {
 		fmt.Println(expandedTag)

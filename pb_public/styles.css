@@ -417,6 +417,7 @@ li {
     border-bottom: solid 0.75px #666;
     transition: 0.3s all;
     border-radius: 5px;
+    position: relative;
 }
 
 .thread-list-entry:hover {
@@ -425,7 +426,6 @@ li {
 
 .thread-entry-title {
     font-size: 15px;
-    ;
 }
 
 .thread-entry-model {}
@@ -433,6 +433,27 @@ li {
 .thread-entry-message {
     font-size: 13px;
     margin-top: 0.5rem;
+}
+
+.delete-thread-icon {
+    position: absolute;
+    right: 0.25rem;
+    width: 18px;
+    border-radius: 5px;
+}
+
+.delete-thread-icon:hover {
+    background-color: #885959;
+}
+
+.delete-thread-status {
+    top: 3rem;
+    right: 0.5rem;
+    background-color: #e6f0f0;
+    padding: 0.75rem;
+    border-radius: 2rem;
+    margin: 0.25rem;
+    font-size: 14px;
 }
 
 .dual-timestamps-container {

@@ -37,7 +37,10 @@ type LoadedMessageParams struct {
 	ThreadId string `db:"thread_id" json:"thread_id"`
 }
 
-templ LoadedThread(messages []LoadedMessageParams) {
+templ LoadedThread(threadTitle string, messages []LoadedMessageParams) {
+	<div id="thread-title" hx-swap-oob="innerHTML">
+		{ threadTitle }
+	</div>
 	for _, message := range messages {
 		if (message.Sender == "human") {
 			<div class="chat-message from-user">

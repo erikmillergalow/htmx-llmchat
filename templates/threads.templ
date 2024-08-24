@@ -55,19 +55,81 @@ templ LastMessageTimestamp(id string, time types.DateTime) {
    <div id={ "last-updated-" + id } hx-swap-oob="innerHTML">Updated at: { types.DateTime.String(time) }</div>
 }
 
+templ DeleteThreadMessage() {
+    <p
+        class="delete-thread-status"
+        _="on load wait 2s transition opacity to 0 then remove me init add @disabled to #message-input"
+    >
+        Thread deleted...
+    </p>
+    <div class="chat-window" id="chat-window" hx-swap-oob="outerHTML">
+		<div class="chat-title-header">
+			<div class="chat-header-left">
+				<svg
+					class="threads-icon"
+					xmlns="http://www.w3.org/2000/svg"
+					width="24"
+					height="24"
+					viewBox="0 0 24 24"
+					style="
+                        fill: rgba(0, 0, 0, 1);
+                        transform:;
+                        msfilter:;
+                    "
+				>
+					<path
+						d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"
+					></path>
+					<path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path>
+				</svg>
+				<p id="thread-title" class="thread-title">
+					Create or select thread from the sidebar
+				</p>
+			</div>
+			<div
+				id="chat-api-select"
+				class="chat-api-select"
+				hx-get="http://127.0.0.1:8090/apis"
+				hx-trigger="load, refresh-apis from:body"
+				hx-target="this"
+				hx-swap="innerHTML"
+			></div>
+		</div>
+		<!-- fill message history here, stream responses -->
+		<div class="messages-container" id="chat-messages"></div>
+	</div>
+}
+
 templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNew bool) {
     <div
-        id={ params.Id }
+        id={ "thread-" + params.Id }
         class="thread-list-entry"
         hx-get={ "http://127.0.0.1:8090/thread/" + params.Id }
         hx-trigger="click"
         hx-target="#chat-messages"
-        if isNew {
-            _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
-        } else {
-            _={ "on click set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Title + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
-        }
+        _={ "on click remove @disabled from #message-input" }
     >
+        <svg
+            hx-delete={ "http://127.0.0.1:8090/thread/" + params.Id }
+            hx-trigger="click consume"
+            hx-target={ "#thread-" + params.Id }
+            hx-swap="outerHTML"
+            hx-confirm="Delete thread and all associated messages?"
+            class="delete-thread-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            style="
+                fill: rgba(0, 0, 0, 1);
+                transform:;
+                msfilter:;
+            "
+        >
+            <path
+                d="M6 7H5v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7H6zm10.618-3L15 2H9L7.382 4H3v2h18V4z"
+            ></path>
+        </svg>
 
         @ThreadTitle(params.Id, params.Title)
         <p class="thread-entry-model"> { params.Model } </p>
@@ -112,6 +174,36 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
             <div class="chat-header-left">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
                 <p id="thread-title" class="thread-title">{ params.Id }</p>
+            </div>
+            <div
+                id="chat-api-select"
+                class="chat-api-select"
+                hx-get="http://127.0.0.1:8090/apis"
+                hx-trigger="load, refresh-apis from:body"
+                hx-target="this"
+                hx-swap="innerHTML"
+            ></div>
+        </div>
+
+        <div class="messages-container" id="chat-messages">
+
+        </div>
+    </div>
+}
+
+templ NewThreadListEntries(newThreadId string, threadParamsList []ThreadListEntryParams, allTags [][]TagParams) {
+    for i, params := range threadParamsList {
+        if i == 0 {
+            @ThreadListEntry(params, allTags[i], true)
+        } else {
+            @ThreadListEntry(params, allTags[i], false)
+        }
+    }
+    <div class="chat-window" id="chat-window" hx-swap-oob="outerHTML">
+        <div class="chat-title-header">
+            <div class="chat-header-left">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
+                <p id="thread-title" class="thread-title">{ newThreadId }</p>
             </div>
             <div
                 id="chat-api-select"

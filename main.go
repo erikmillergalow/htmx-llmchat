@@ -69,6 +69,11 @@ func main() {
 			return CreateThread(c, app)
 		})
 
+		e.Router.DELETE("/thread/:threadId", func(c echo.Context) error {
+			id := c.PathParam("threadId")
+			return DeleteThread(id, c, app)
+		})
+		
 		// load APIs for chat window dropdown
 		e.Router.GET("/apis", func(c echo.Context) error {
 			return LoadApis(c, app)

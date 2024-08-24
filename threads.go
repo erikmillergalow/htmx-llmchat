@@ -15,9 +15,30 @@ import (
 	"github.com/pocketbase/pocketbase/tools/list"
 )
 
-func GetThreadList(sortMethod string, c echo.Context, app *pocketbase.PocketBase) error {
+func collectAllThreads(sortBy string, app *pocketbase.PocketBase) ([]templates.ThreadListEntryParams, [][]templates.TagParams, error) {
 	var threads []templates.ThreadListEntryParams
+	app.Dao().DB().
+		Select("*").
+		From("chat_meta").
+		OrderBy(sortBy).
+		All(&threads)
 
+	var tags [][]templates.TagParams
+
+	// load thread tags
+	for _, thread := range threads {
+		threadTags, err := LoadThreadTags(thread.Id, app)
+		if err != nil {
+			return nil, nil, err
+		}
+		tags = append(tags, threadTags)
+	}
+
+	return threads, tags, nil
+}
+
+func GetThreadList(sortMethod string, c echo.Context, app *pocketbase.PocketBase) error {
+	
 	sortBy := "created DESC"
 	switch sortMethod {
 	case "creation":
@@ -29,27 +50,16 @@ func GetThreadList(sortMethod string, c echo.Context, app *pocketbase.PocketBase
 	default:
 		sortBy = "created DESC"
 	}
-	app.Dao().DB().
-		Select("*").
-		From("chat_meta").
-		OrderBy(sortBy).
-		All(&threads)
 
-	var allTags [][]templates.TagParams
-
-	// load thread tags
-	for _, thread := range threads {
-		threadTags, err := LoadThreadTags(thread.Id, c, app)
-		if err != nil {
-			return err
-		}
-		allTags = append(allTags, threadTags)
+	threads, allTags, err := collectAllThreads(sortBy, app)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch all threads")
 	}
 
 	c.Response().Writer.WriteHeader(200)
 	threadListEntry := templates.ThreadListEntries(threads, allTags)
 	fmt.Println(threadListEntry)
-	err := threadListEntry.Render(context.Background(), c.Response().Writer)
+	err = threadListEntry.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render thread list response")
 	}
@@ -65,10 +75,42 @@ func GetThread(id string, c echo.Context, app *pocketbase.PocketBase) error {
 		Where(dbx.NewExp("thread_id = {:id}", dbx.Params{"id": id})).
 		All(&messages)
 
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch thread record for loading thread title")
+	}
+
 	c.Response().Header().Set("HX-Trigger-After-Settle", "format-thread-markdown")
 	c.Response().Writer.WriteHeader(200)
-	loadedChat := templates.LoadedThread(messages)
-	err := loadedChat.Render(context.Background(), c.Response().Writer)
+	loadedChat := templates.LoadedThread(threadRecord.GetString("thread_title"), messages)
+	err = loadedChat.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render loaded chat response")
+	}
+
+	return nil
+}
+
+func DeleteThread(threadId string, c echo.Context, app *pocketbase.PocketBase) error {
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", threadId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch thread record to delete")
+	}
+
+	if err := app.Dao().DeleteRecord(threadRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch thread record to delete")
+	}
+	
+	deleteQuery := "DELETE FROM chat WHERE thread_id ='" + threadId + "'"
+	fmt.Println(deleteQuery)
+	if _, err := app.Dao().DB().NewQuery(deleteQuery).Execute(); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to delete chat messages with thread")
+	}
+
+	c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
+	c.Response().Writer.WriteHeader(200)
+	deleteMessage := templates.DeleteThreadMessage()
+	err = deleteMessage.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render loaded chat response")
 	}
@@ -100,18 +142,16 @@ func CreateThread(c echo.Context, app *pocketbase.PocketBase) error {
 		return c.String(http.StatusInternalServerError, "failed to set thread title to record ID")
 	}
 
-	threadParams := templates.ThreadListEntryParams{
-		Id:                   newThreadRecord.Id,
-		Title:                newThreadRecord.Id,
-		LastMessage:          "Empty chat...",
-		LastMessageTimestamp: newThreadRecord.Created,
-		Created:              newThreadRecord.Created,
+	newThreadList, tags, err := collectAllThreads("created DESC", app)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch all threads while creating new thread")
 	}
+	fmt.Println(newThreadList)
 
 	c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
 	c.Response().Writer.WriteHeader(200)
-	newThread := templates.NewThreadListEntry(threadParams)
-	err = newThread.Render(context.Background(), c.Response().Writer)
+	updatedThreadList := templates.NewThreadListEntries(newThreadRecord.Id, newThreadList, tags)
+	err = updatedThreadList.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		fmt.Printf("Error rendering new thread: %v\n", err)
 		return c.String(http.StatusInternalServerError, "failed to render new thread DB entry")
