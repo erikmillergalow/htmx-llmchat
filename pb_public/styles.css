@@ -83,6 +83,12 @@ li {
     cursor: col-resize;
 }
 
+.gutter.gutter-vertical {
+    background: linear-gradient(to bottom, #d3d3d3, #67a84366);
+    cursor: col-resize;
+    height: 4px;
+}
+
 .ui-container {
     display: flex;
     height: 100vh;
@@ -303,21 +309,16 @@ li {
 }
 
 .chat-container {
-    display: grid;
-    grid-template-rows: 1fr 1fr 1fr;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
     width: 100%;
 }
 
 .chat-window {
-    grid-row-start: 1;
-    grid-row-end: 3;
-    grid-column-start: 1;
-    grid-column-end: 5;
     display: flex;
     flex-direction: column;
     background-color: #b1c7ba;
-    padding: 0.25rem;
+    padding-top: 0.25rem;
+    padding-right: 0.25rem;
+    padding-left: 0.25rem;
 }
 
 .chat-title-header {
@@ -373,13 +374,9 @@ li {
 }
 
 .input-container {
-    grid-row-start: 3;
-    grid-row-end: 4;
-    grid-column-start: 1;
-    grid-column-end: 5;
     display: flex;
     background-color: #b1f7ba;
-    border-top: solid #666;
+    border-top: solid #66666166;
     border-width: 0.5px;
     height: 100%;
     width: 100%;

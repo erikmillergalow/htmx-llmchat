@@ -185,6 +185,14 @@
         sizes: [25, 75],
         gutterSize: 4,
     });
+
+    document.body.addEventListener("chat-window-loaded", function() {
+        window.Split(["#chat-window", "#input-container"], {
+            direction: "vertical",
+            sizes: [75, 25],
+            gutterSize: 4,
+        });
+    });
 </script>
 <script>
     document.addEventListener("DOMContentLoaded", function () {

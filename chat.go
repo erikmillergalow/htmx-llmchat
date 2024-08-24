@@ -19,14 +19,16 @@ func InitializeChat(c echo.Context, app *pocketbase.PocketBase) error {
 		OrderBy("created DESC").
 		All(&apiEditorParams)
 
-	c.Response().Writer.WriteHeader(200)
 	if len(apiEditorParams) == 0 {
+		c.Response().Writer.WriteHeader(200)
 		noApisInfo := templates.NoApisAvailable()
 		err := noApisInfo.Render(context.Background(), c.Response().Writer)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "failed to render no APIs info")
 		}
 	} else {
+	  c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
+		c.Response().Writer.WriteHeader(200)
 		chat := templates.ActiveChat()
 		err := chat.Render(context.Background(), c.Response().Writer)
 		if err != nil {
