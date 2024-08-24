@@ -12,6 +12,7 @@ import (
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/forms"
 	"github.com/pocketbase/pocketbase/models"
+	"github.com/pocketbase/pocketbase/tools/list"
 )
 
 func GetThreadList(sortMethod string, c echo.Context, app *pocketbase.PocketBase) error {
@@ -152,5 +153,19 @@ func SaveThreadTitle(id string, title string, c echo.Context, app *pocketbase.Po
 		return c.String(http.StatusInternalServerError, "failed to render thread title")
 	}
 
+	return nil
+}
+
+func RemoveTagFromThread(threadId string, tagId string, c echo.Context, app *pocketbase.PocketBase) error {
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", threadId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find thread record to remove tag")
+	}
+
+	threadRecord.Set("tags", list.SubtractSlice(threadRecord.GetStringSlice("tags"), []string{tagId}))
+	if err := app.Dao().SaveRecord(threadRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update thread title record")
+	}
+	
 	return nil
 }

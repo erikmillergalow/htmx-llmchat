@@ -7,62 +7,107 @@ type TagParams struct {
     Color string `db:"color" json:"color"`
 }
 
+css tagStyle (color string) {
+    background-color: { color };
+}
+
+templ Tag(threadId string, tag TagParams) {
+    <p 
+        hx-get={ "http://127.0.0.1:8090/tag/" + tag.Id + "/thread/" + threadId }
+        hx-trigger="click consume"
+        hx-swap="innerHTML"
+        hx-target={ "#tag-editor-" + threadId }
+        class={ "tag", tagStyle(tag.Color) }
+        id={ "tag-" + tag.Id + "-thread-" + threadId }
+    >
+        { tag.Value }
+    </p>
+}
+
+// update tag will update tag values, then reload entire thread view in sidebar?
+templ TagModifier(tag TagParams, threadId string) {
+    <div
+        id="tag-modifier"
+        class="tag-editor"
+        onclick="event.stopPropagation();"
+    >
+        <form
+            id="tag-update-form"
+            class="tag-update-form"
+            hx-post={ "http://127.0.0.1:8090/tag/update/" + tag.Id }
+            hx-target="#sidebar-content" 
+        >
+            <label class="tag-editor-label">Modify tag:</label>
+            <div class="add-tag-input-row">
+                <input
+                    class="tag-value-input"
+                    name="value"
+                    value={ tag.Value }
+                    type="text"
+                ></input>
+
+                <input
+                    class="tag-color-input"
+                    name="color"
+                    value={ tag.Color }
+                    type="color"
+                ></input>
+                <button 
+                    type="submit"
+                    id="send-button"
+                    class="submit-modify-tag-button"
+                >
+                    Submit
+                </button>
+            </div>
+        </form>
+        <div class="tag-editor-buttons">
+            <button
+                _="on click halt the event remove #tag-modifier"
+                id="cancel-button"
+                class="cancel-modify-tag-button"
+            >
+                Cancel
+            </button>
+            <button
+                _="on click halt the event remove #tag-modifier"
+                hx-delete={ "http://127.0.0.1:8090/thread/" + threadId + "/tag/" + tag.Id }
+                hx-target={ "#tag-" + tag.Id + "-thread-" + threadId } 
+                hx-swap="outerHTML"
+                class="remove-tag-button"
+            >
+                Remove tag
+            </button>
+            <button
+                hx-delete={ "http://127.0.0.1:8090/tag/" + tag.Id }
+                hx-target="#sidebar-content"
+                class="delete-tag-button"
+            >
+                Delete tag
+            </button>
+        </div>
+    </div>
+}
+
 templ TagExists() {
     <div id="new-tag-editor" hx-swap-oob="delete"></div>
 }
 
-templ NewTag(params TagParams) {
+templ NewTag(threadId string, params TagParams) {
     <div id={ "tags-" + params.ThreadId } hx-oob-swap="beforeend">
-        <p class={ "tag", tagStyle(params.Color) }> { params.Value } </p>
+        @Tag(threadId, params)
     </div>
     <div id="new-tag-editor" hx-swap-oob="delete"></div>
-}
-
-templ TagEditor(params TagParams) {
-    <form
-        id="new-tag-editor"
-        class="new-tag-editor"
-        hx-post={ "http://127.0.0.1:8090/thread/tag/" + params.Id }
-        hx-target={ "#tags-" + params.Id }
-        hx-swap="beforeend"
-    >
-        <div class="add-tag-input-row">
-            <input
-                class="tag-value-input"
-                type="text"
-                placeholder="Enter tag name..."
-                name="value"
-                value={ params.Id }
-            ></input>
-            <input
-                class="tag-color-input"
-                type="color"
-                placeholder="Enter tag name..."
-                name="color"
-                value={ params.Color }
-            ></input>
-        </div>
-
-        <div class="tag-editor-buttons">
-            <button
-                _="on click halt the event remove #new-tag-editor"
-                id="cancel-button"
-                class="cancel-tag-button"
-            >
-                Cancel
-            </button>
-            <button type="submit" id="send-button" class="add-tag-button">Submit</button>
-        </div>
-    </form>
 }
 
 templ NewTagEditor(threadId string, paramsList []TagParams) {
     <form
         id="new-tag-editor"
-        class="new-tag-editor"
+        class="tag-editor"
         hx-post={ "http://127.0.0.1:8090/thread/tag/" + threadId }
         hx-target={ "#tags-" + threadId }
         hx-swap="beforeend"
+        onclick="event.stopPropagation();"
     >
         <label class="tag-editor-label">Select existing:</label>
         <div class="existing-tags-container">
@@ -100,7 +145,7 @@ templ NewTagEditor(threadId string, paramsList []TagParams) {
             <button
                 _="on click halt the event remove #new-tag-editor"
                 id="cancel-button"
-                class="cancel-tag-button"
+                class="cancel-add-tag-button"
             >
                 Cancel
             </button>

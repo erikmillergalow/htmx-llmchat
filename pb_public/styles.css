@@ -484,7 +484,11 @@ li {
     border: 1px solid #b1c7ba;
 }
 
-.new-tag-editor {
+.tag-modifier {
+   position: absolute; 
+}
+
+.tag-editor {
     display: flex;
     flex-direction: column;
     margin-top: 0.5rem;
@@ -495,9 +499,17 @@ li {
     border-radius: 5px;
 }
 
+.tag-update-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
 .add-tag-input-row {
     display: flex;
     flex-direction: row;
+    width: 100%;
+    align-items: center;
 }
 
 .tag-editor-label {
@@ -547,12 +559,30 @@ li {
     flex-direction: row;
 }
 
-.cancel-tag-button {
+.cancel-add-tag-button {
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+}
+
+.cancel-modify-tag-button {
     margin-top: 0.25rem;
     margin-right: 0.25rem;
 }
 
 .add-tag-button {
+    margin-top: 0.25rem;
+}
+
+.submit-modify-tag-button {
+    margin-left: 0.25rem;
+}
+
+.remove-tag-button {
+    margin-top: 0.25rem;
+    margin-right: 0.25rem;
+}
+
+.delete-tag-button {
     margin-top: 0.25rem;
 }
 

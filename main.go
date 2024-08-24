@@ -130,13 +130,39 @@ func main() {
 			return SaveTag(id, data, c, app)
 		})
 
+		// open editor to update tag, remove from thread, or delete entirely
+		e.Router.GET("/tag/:tagId/thread/:threadId", func(c echo.Context) error {
+			tagId := c.PathParam("tagId")
+			threadId := c.PathParam("threadId")
+			return OpenTagModifier(tagId, threadId, c, app)
+		})
+
+		e.Router.POST("/tag/update/:tagId", func(c echo.Context) error {
+			tagId := c.PathParam("tagId")
+			data := apis.RequestInfo(c).Data
+			return UpdateTag(tagId, data, c, app)
+		})
+
+		e.Router.DELETE("/tag/:tagId", func(c echo.Context) error {
+			tagId := c.PathParam("tagId")
+			return DeleteTag(tagId, c, app)
+		})
+
+		// remove tag from thread
+		e.Router.DELETE("/thread/:threadId/tag/:tagId", func(c echo.Context) error {
+			threadId := c.PathParam("threadId")
+			tagId := c.PathParam("tagId")
+			return RemoveTagFromThread(threadId, tagId, c, app)
+		})
+
+		// add tag to thread
 		e.Router.POST("/thread/:threadId/tag/:tagId", func(c echo.Context) error {
 			threadId := c.PathParam("threadId")
 			tagId := c.PathParam("tagId")
 			return AddExistingTagToThread(threadId, tagId, c, app)
 		})
 
-		// open confin
+		// open config
 		e.Router.GET("/config", func(c echo.Context) error {
 			return OpenConfig(c, app)
 		})

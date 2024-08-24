@@ -54,7 +54,7 @@ func CreateTag(threadId string, c echo.Context, app *pocketbase.PocketBase) erro
 	return nil
 }
 
-func SaveTag(id string, data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
+func SaveTag(threadId string, data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
 	value := data["value"].(string)
 	color := data["color"].(string)
 
@@ -75,7 +75,7 @@ func SaveTag(id string, data map[string]any, c echo.Context, app *pocketbase.Poc
 		return c.String(http.StatusInternalServerError, "failed to create new tag DB entry")
 	}
 
-	threadRecord, err := app.Dao().FindRecordById("chat_meta", id)
+	threadRecord, err := app.Dao().FindRecordById("chat_meta", threadId)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to read thread DB")
 	}
@@ -88,12 +88,12 @@ func SaveTag(id string, data map[string]any, c echo.Context, app *pocketbase.Poc
 	tagParams := templates.TagParams{
 		Id:       newTagRecord.Id,
 		Value:    value,
-		ThreadId: id,
+		ThreadId: threadId,
 		Color:    color,
 	}
 
 	c.Response().Writer.WriteHeader(200)
-	newTag := templates.NewTag(tagParams)
+	newTag := templates.NewTag(threadId, tagParams)
 	err = newTag.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render tag editor")
@@ -136,7 +136,7 @@ func AddExistingTagToThread(threadId string, tagId string, c echo.Context, app *
 			return c.String(http.StatusInternalServerError, "failed to render tag editor")
 		}
 	} else {
-		newTag := templates.NewTag(tagParams)
+		newTag := templates.NewTag(threadId, tagParams)
 		err = newTag.Render(context.Background(), c.Response().Writer)
 		if err != nil {
 			return c.String(http.StatusInternalServerError, "failed to render tag editor")
@@ -145,3 +145,66 @@ func AddExistingTagToThread(threadId string, tagId string, c echo.Context, app *
 
 	return nil
 }
+
+func OpenTagModifier(tagId string, threadId string, c echo.Context, app *pocketbase.PocketBase) error {
+	tagRecord, err := app.Dao().FindRecordById("tags", tagId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find tag record to open modifier")
+	}
+
+	tagParams := templates.TagParams{
+		Id:       tagRecord.Id,
+		Value:    tagRecord.GetString("value"),
+		ThreadId: threadId,
+		Color:    tagRecord.GetString("color"),
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	tagModifier := templates.TagModifier(tagParams, threadId)
+	err = tagModifier.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render tag modifier")
+	}
+
+	return nil
+}
+
+func UpdateTag(tagId string, data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
+	tagRecord, err := app.Dao().FindRecordById("tags", tagId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to find tag record to update")
+	}
+
+	tagRecord.Set("value", data["value"].(string))
+	tagRecord.Set("color", data["color"].(string))
+
+	if err := app.Dao().SaveRecord(tagRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update tag record")
+	}
+
+	err = GetThreadList("creation", c, app)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch threads after tag deletion")
+	}
+
+	return nil
+}
+
+func DeleteTag(tagId string, c echo.Context, app *pocketbase.PocketBase) error {
+	tagRecord, err := app.Dao().FindRecordById("tags", tagId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch tag to delete")
+	}
+
+	if err := app.Dao().DeleteRecord(tagRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to delete tag")
+	}
+
+	err = GetThreadList("creation", c, app)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to fetch threads after tag deletion")
+	}
+
+	return nil
+}
+
