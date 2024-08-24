@@ -90,7 +90,8 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
                 tag +
             </p>
             for _, tag := range threadTags {
-                <p class={ "tag", tagStyle(tag.Color) }> { tag.Value } </p>
+                @Tag(tag)
+                @TagModifier(tag, params)
             }
         </div>
         <div id={ "tag-editor-" + params.Id }>
@@ -103,8 +104,21 @@ css tagStyle (color string) {
     background-color: { color };
 }
 
+templ TagModifier(tag TagParams, thread ThreadListEntryParams) {
+    <div 
+        id={ "tag-modifier-" + tag.Id}
+        popover
+    >
+       Popover! 
+    </div>
+}
+
 templ Tag(params TagParams) {
-    <p class="tag"> { params.Value } </p>
+    <p class={ "tag", tagStyle(params.Color) }>
+        <button popovertarget={ "tag-modifier-" + params.Id }>
+            { params.Value }
+        </button>
+    </p>
 }
 
 templ NewThreadListEntry(params ThreadListEntryParams) {
