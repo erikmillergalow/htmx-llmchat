@@ -108,6 +108,7 @@ func CreateThread(c echo.Context, app *pocketbase.PocketBase) error {
 		Created:              newThreadRecord.Created,
 	}
 
+	c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
 	c.Response().Writer.WriteHeader(200)
 	newThread := templates.NewThreadListEntry(threadParams)
 	err = newThread.Render(context.Background(), c.Response().Writer)
