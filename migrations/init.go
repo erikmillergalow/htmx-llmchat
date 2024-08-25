@@ -12,7 +12,7 @@ import (
 func init() {
 	m.Register(func(db dbx.Builder) error {
 		jsonData := `
-[
+<LeftMouse>[
     {
         "id": "_pb_users_auth_",
         "name": "users",
@@ -306,20 +306,6 @@ func init() {
             },
             {
                 "system": false,
-                "id": "9znwmzca",
-                "name": "useful",
-                "type": "text",
-                "required": false,
-                "presentable": false,
-                "unique": false,
-                "options": {
-                    "min": null,
-                    "max": null,
-                    "pattern": ""
-                }
-            },
-            {
-                "system": false,
                 "id": "49innceq",
                 "name": "api",
                 "type": "text",
@@ -345,6 +331,16 @@ func init() {
                     "max": null,
                     "pattern": ""
                 }
+            },
+            {
+                "system": false,
+                "id": "kwidnp10",
+                "name": "useful",
+                "type": "bool",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {}
             }
         ],
         "indexes": [],
