@@ -157,16 +157,15 @@
     }
 
     function handleNewMessageMarkdown(event) {
-        const messageId = event.detail.message.match(/id\s*=\s*["']([^"']+)["']/);
-        const newMessageElement = document.getElementById(messageId[1]);
+        const messageId = event.detail.message.match(/message-id\s*=\s*["']([^"']+)["']/);
+        const newMessageElement = document.getElementById("response-content-" + messageId[1]);
         formatMarkdown(newMessageElement);
     }
 
     document.addEventListener("htmx:wsAfterMessage", (e) => {
-        // make sure it's not the first or last websocket messages (initial chatbox and timestamp update)
-        if (e.detail.message.includes("response-content-") && !e.detail.message.includes("from-user")) {
-            clearTimeout(markdownTimeout);
-            markdownTimeout = setTimeout(() => handleNewMessageMarkdown(e), 600);
+        // render markdown after message has completed streaming
+        if (e.detail.message.includes("last-updated-")) {
+            handleNewMessageMarkdown(e);
         }
     });
 

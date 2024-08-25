@@ -249,7 +249,7 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 			}
 
 			lastMessageTime := types.NowDateTime()
-			responseChunkComponent := templates.LastMessageTimestamp(htmxMsg.ThreadId, lastMessageTime)
+			responseChunkComponent := templates.LastMessageTimestamp(htmxMsg.ThreadId, modelMessageRecord.Id, lastMessageTime)
 
 			// sending HTML along websocket needs to be pulled to it's own function
 			var lastMessageTimeBuf bytes.Buffer

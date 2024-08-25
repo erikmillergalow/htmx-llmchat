@@ -51,8 +51,14 @@ templ OobTextSwap(id string, value string) {
    <div id={ id } hx-swap-oob="innerHTML">{ value }</div>
 }
 
-templ LastMessageTimestamp(id string, time types.DateTime) {
-   <div id={ "last-updated-" + id } hx-swap-oob="innerHTML">Updated at: { types.DateTime.String(time) }</div>
+templ LastMessageTimestamp(threadId string, messageId string, time types.DateTime) {
+    <div 
+        id={ "last-updated-" + threadId }
+        hx-swap-oob="innerHTML"
+        message-id={ messageId }
+    >
+        Updated at: { types.DateTime.String(time) }
+    </div>
 }
 
 templ DeleteThreadMessage() {
