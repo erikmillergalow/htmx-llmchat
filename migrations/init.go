@@ -11,7 +11,8 @@ import (
 
 func init() {
 	m.Register(func(db dbx.Builder) error {
-		jsonData := `[
+		jsonData := `
+[
     {
         "id": "_pb_users_auth_",
         "name": "users",
@@ -293,6 +294,20 @@ func init() {
                 "system": false,
                 "id": "el7n3qdp",
                 "name": "model",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "min": null,
+                    "max": null,
+                    "pattern": ""
+                }
+            },
+            {
+                "system": false,
+                "id": "9znwmzca",
+                "name": "useful",
                 "type": "text",
                 "required": false,
                 "presentable": false,
