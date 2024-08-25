@@ -44,6 +44,11 @@ func main() {
 			return InitializeChat(c, app)
 		})
 
+		e.Router.POST("/chat/useful/:messageId", func(c echo.Context) error {
+			messageId := c.PathParam("messageId")
+			return ToggleMessageUsefulness(messageId, c, app)
+		})
+
 		e.Router.GET("/threads", func(c echo.Context) error {
 			return GetThreadList("creation", c, app)
 		})

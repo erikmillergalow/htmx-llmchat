@@ -38,3 +38,26 @@ func InitializeChat(c echo.Context, app *pocketbase.PocketBase) error {
 
 	return nil
 }
+
+func ToggleMessageUsefulness(messageId string, c echo.Context, app *pocketbase.PocketBase) error {
+	messageRecord, err := app.Dao().FindRecordById("chat", messageId)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve chat record to update usefulness")
+	}
+
+	useful := messageRecord.GetBool("useful")
+	messageRecord.Set("useful", !useful)
+	if err = app.Dao().SaveRecord(messageRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update chat record's usefulness")
+	}
+
+	c.Response().Writer.WriteHeader(200)
+	usefulnessResponse := templates.UsefulnessResponse(messageId, !useful)
+	err = usefulnessResponse.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render usefulness response")
+	}
+
+	return nil
+}
+

@@ -58,7 +58,10 @@ templ LastMessageTimestamp(id string, time types.DateTime) {
 templ DeleteThreadMessage() {
     <p
         class="delete-thread-status"
-        _="on load wait 2s transition opacity to 0 then remove me init add @disabled to #message-input"
+        _={ "on load wait 2s transition opacity to 0 then remove me " +
+            "init add @disabled to #message-input " +
+            "set $thread_id to "+ "\" " +
+            "set #thread-id-chat.value to " + "\" " }
     >
         Thread deleted...
     </p>
@@ -107,7 +110,9 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
         hx-get={ "http://127.0.0.1:8090/thread/" + params.Id }
         hx-trigger="click"
         hx-target="#chat-messages"
-        _={ "on click remove @disabled from #message-input" }
+        _={ "on click remove @disabled from #message-input " +
+            "set $thread_id to" + "\"" + params.Id + "\" " + 
+            "set #thread-id-chat.value to " + "\"" + params.Id + "\" " }
     >
         <svg
             hx-delete={ "http://127.0.0.1:8090/thread/" + params.Id }
@@ -165,7 +170,10 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
     <div
         id="sidebar-content"
         hx-swap-oob="afterbegin"
-        _={ "init set $thread_id to " + "\"" + params.Id + "\"" + " set #thread-title.innerText to " + "\"" + params.Id + "\"" + " set #thread-id-chat.value to " + "\"" + params.Id + "\"" + "remove @disabled from #message-input" }
+        _={ "init set $thread_id to " + "\"" + params.Id + "\" " + 
+            "set #thread-title.innerText to " + "\"" + params.Id + "\" " +
+            "set #thread-id-chat.value to " + "\"" + params.Id + "\" " +
+            "remove @disabled from #message-input" }
     >
         @ThreadListEntry(params, []TagParams{}, true)
     </div>

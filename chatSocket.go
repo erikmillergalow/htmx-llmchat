@@ -126,7 +126,7 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				UserMessage: htmxMsg.Msg,
 				Model:       chatModelName,
 			}
-			chatComponent := templates.ChatMessage(chatParams)
+			chatComponent := templates.InitChatMessage(chatParams)
 
 			// create ws write function to handle these
 			var htmlBuf bytes.Buffer
