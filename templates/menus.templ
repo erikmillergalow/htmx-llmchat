@@ -1,33 +1,64 @@
 package templates
 
+import (
+    "strconv"
+    "fmt"
+)
+
 type SideBarMenuParams struct {
     OpenAIKey string `db:"openai_key" json:"openai_key"`
     GroqKey string `db:"groq_key" json:"groq_key"`
 }
 
 templ SideBarMenu(params SideBarMenuParams) {
-        <form
-            hx-put="http://127.0.0.1:8090/config"
+        <div 
+            class="model-stats"
+            hx-get="http://127.0.0.1:8090/stats"
             hx-target="this"
-            hx-swap="beforeend"
-            id="side-bar-menu"
-            class="config-menu"
-        >
-            <label>OpenAI Key</label>
-            <input type="password" name="openai-key" class="key-input" value={ params.OpenAIKey }></input>
-            <label>Groq Key</label>
-            <input type="password" name="groq-key" class="key-input" value={ params.GroqKey }></input>
-            <button class="keys-submit-button">Save</button>
-            <button
-                hx-get="http://127.0.0.1:8090/config/done"
-                hx-target="#side-bar-menu"
-                hx-swap="outerHTML"
-                hx-trigger="click"
-                class="keys-done-button"
-            >
-                Done
-            </button>
-        </form>
+            hx-swap="innerHTML"
+            hx-trigger="load"
+        ></div>
+        <!-- <form -->
+        <!--     hx-put="http://127.0.0.1:8090/config" -->
+        <!--     hx-target="this" -->
+        <!--     hx-swap="beforeend" -->
+        <!--     id="side-bar-menu" -->
+        <!--     class="config-menu" -->
+        <!-- > -->
+        <!--     <input type="color" /> -->
+        <!-- </form> -->
+}
+
+css percentStyle(percent float64) {
+	width: { fmt.Sprintf("%f%%", percent * 100.0) };
+	border-radius: 5px;
+	height: 8px;
+	background-color: green;
+}
+
+templ ModelStatsViewer(sortedKeys []string, total map[string]int, useful map[string]int, percent map[string]float64) {
+    for _, model := range sortedKeys { 
+        if model != "error" && model != "" {
+            <div class="model-stats-item">
+                <p class="model-stats-title">{ model }</p>
+                <div class="model-stats-row">
+                    <p class="model-stats-text">Total messages: </p>
+                    <p class="model-stats-text">{ strconv.Itoa(total[model]) }</p>
+                </div> 
+                <div class="model-stats-row">
+                    <p class="model-stats-text">Useful messages: </p>
+                    if _, ok := useful[model]; ok {
+                        <p class="model-stats-text">{ strconv.Itoa(useful[model]) }</p>
+                    } else {
+                        <p class="model-stats-text">0</p> 
+                    }
+                </div>
+                <div style="background-color: black; width: 100%; border-radius: 5px; height: 8px; margin-top: 0.25rem;">
+                    <div class={ percentStyle(percent[model]) }></div>
+                </div>
+            </div>
+        }
+    }
 }
 
 templ SettingsUpdated() {

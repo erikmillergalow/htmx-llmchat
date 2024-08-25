@@ -177,6 +177,9 @@ func main() {
 			return OpenConfig(c, app)
 		})
 
+		e.Router.GET("/stats", func(c echo.Context) error {
+			return GetModelStats(c, app)
+		})
 		// update config
 		e.Router.PUT("/config", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data

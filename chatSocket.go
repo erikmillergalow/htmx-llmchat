@@ -114,13 +114,13 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				continue
 			}
 
-			selectedModelRecord, err := app.Dao().FindRecordById("apis", userRecord.GetString("selected_api"))
+			selectedApiRecord, err := app.Dao().FindRecordById("apis", userRecord.GetString("selected_api"))
 			if err != nil {
 				handleChatError(err, ws, htmxMsg.ThreadId, app)
 				continue
 			}
 
-			chatModelName := selectedModelRecord.GetString("name")
+			chatModelName := selectedApiRecord.GetString("name")
 			if userRecord.GetString("selected_model_name") != "" {
 				chatModelName = chatModelName + "-" + userRecord.GetString("selected_model_name")
 			}
@@ -209,8 +209,8 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 				From("settings").
 				All(&settings)
 
-			config := openai.DefaultConfig(selectedModelRecord.GetString("api_key"))
-			config.BaseURL = selectedModelRecord.GetString("url")
+			config := openai.DefaultConfig(selectedApiRecord.GetString("api_key"))
+			config.BaseURL = selectedApiRecord.GetString("url")
 			chatgptClient := openai.NewClientWithConfig(config)
 
 			req := openai.ChatCompletionRequest{

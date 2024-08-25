@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"net/http"
+	"sort"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
 
@@ -47,6 +48,47 @@ func SaveConfig(data map[string]any, c echo.Context, app *pocketbase.PocketBase)
 	c.Response().Writer.WriteHeader(200)
 	settingsUpdated := templates.SettingsUpdated()
 	err = settingsUpdated.Render(context.Background(), c.Response().Writer)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to render settings update response")
+	}
+
+	return nil
+}
+
+func GetModelStats(c echo.Context, app *pocketbase.PocketBase) error {
+	var messages []templates.LoadedMessageParams
+	app.Dao().DB().
+		Select("*").
+		From("chat").
+		All(&messages)
+
+	totalMessages := make(map[string]int)
+	usefulMessages := make(map[string]int)
+	for _, message := range messages {
+		totalMessages[message.Model]++
+		if message.Useful {
+			usefulMessages[message.Model]++
+		}
+	}
+
+	var sortedKeys []string
+	percent := make(map[string]float64)
+	for model := range totalMessages {
+		sortedKeys = append(sortedKeys, model)
+		if _, ok := usefulMessages[model]; !ok {
+			usefulMessages[model] = 0
+			percent[model] = 0.0
+		} else {
+			percent[model] = float64(usefulMessages[model]) / float64(totalMessages[model])
+		}
+	}
+	sort.Slice(sortedKeys, func(i, j int) bool {
+		return percent[sortedKeys[i]] > percent[sortedKeys[j]]
+	})
+		
+	c.Response().Writer.WriteHeader(200)
+	modelStatsViewer := templates.ModelStatsViewer(sortedKeys, totalMessages, usefulMessages, percent)
+	err := modelStatsViewer.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render settings update response")
 	}
