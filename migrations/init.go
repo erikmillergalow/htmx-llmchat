@@ -317,6 +317,20 @@ func init() {
                     "max": null,
                     "pattern": ""
                 }
+            },
+            {
+                "system": false,
+                "id": "49innceq",
+                "name": "api",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "min": null,
+                    "max": null,
+                    "pattern": ""
+                }
             }
         ],
         "indexes": [],
@@ -499,7 +513,8 @@ func init() {
         "deleteRule": null,
         "options": {}
     }
-]`
+]
+        `
 
 		collections := []*models.Collection{}
 		if err := json.Unmarshal([]byte(jsonData), &collections); err != nil {
