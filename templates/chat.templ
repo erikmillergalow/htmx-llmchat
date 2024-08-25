@@ -1,39 +1,5 @@
 package templates
 
-type ChatMessageParams struct {
-	Id           string
-	UserMessage  string
-	Model        string
-}
-
-templ InitChatMessage(params ChatMessageParams) {
-	<div id="chat-messages" hx-swap-oob="beforeend">
-		<div class="chat-message from-user">
-			<div class="chat-message-user">user:</div>
-			{ params.UserMessage }
-		</div>
-		<div id={ "response-" + params.Id } class="chat-message from-model">
-			<div class="chat-message-header">
-				<div class="chat-message-model">{ params.Model }:</div>
-				<svg
-					class="useful-chat-icon"
-					hx-post={ "http://127.0.0.1:8090/chat/useful/" + params.Id }
-					hx-trigger="click consume"
-					hx-target="this"
-					hx-swap="outerHTML"
-					xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
-				><path d="m6.516 14.323-1.49 6.452a.998.998 0 0 0 1.529 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082a1 1 0 0 0-.59-1.74l-5.701-.454-2.467-5.461a.998.998 0 0 0-1.822 0L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.214 4.107zm2.853-4.326a.998.998 0 0 0 .832-.586L12 5.43l1.799 3.981a.998.998 0 0 0 .832.586l3.972.315-3.271 2.944c-.284.256-.397.65-.293 1.018l1.253 4.385-3.736-2.491a.995.995 0 0 0-1.109 0l-3.904 2.603 1.05-4.546a1 1 0 0 0-.276-.94l-3.038-2.962 4.09-.326z"></path>
-				</svg>		
-			</div>
-			<div id={ "response-content-" + params.Id }></div>
-		</div>
-	</div>
-}
-
-templ ChatStreamChunk(id string, chunk string) {
-	<div id={ "response-content-" + id } hx-swap-oob="beforeend">{ chunk } </div>
-}
-
 type LoadedMessageParams struct {
 	Id      string `db:"id" json:"id"`
 	Message string `db:"message" json:"message"`
@@ -44,44 +10,80 @@ type LoadedMessageParams struct {
 	Useful   bool   `db:"useful" json:"useful"`
 }
 
+type ChatMessageParams struct {
+	Id           string
+	UserMessage  string
+	Model        string
+}
+
+templ ChatStreamChunk(id string, chunk string) {
+	<div id={ "response-content-" + id } hx-swap-oob="beforeend">{ chunk } </div>
+}
+
+templ HumanMessage(message string) {
+	<div class="chat-message from-user">
+		<div class="chat-message-user"><i>user:</i></div>
+		{ message }
+	</div>
+}
+
+templ UsefulnessButton(messageId string, useful bool) {
+	if useful {
+		<svg
+			class="useful-chat-icon"
+			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
+			hx-trigger="click consume"
+			hx-target="#chat-usefulness-container"
+			hx-swap="innerHTML"
+			xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
+		><path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
+		</svg>
+	} else {
+		<svg
+			class="useful-chat-icon"
+			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
+			hx-trigger="click consume"
+			hx-target="#chat-usefulness-container"
+			hx-swap="innerHTML"
+			xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
+		><path d="m6.516 14.323-1.49 6.452a.998.998 0 0 0 1.529 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082a1 1 0 0 0-.59-1.74l-5.701-.454-2.467-5.461a.998.998 0 0 0-1.822 0L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.214 4.107zm2.853-4.326a.998.998 0 0 0 .832-.586L12 5.43l1.799 3.981a.998.998 0 0 0 .832.586l3.972.315-3.271 2.944c-.284.256-.397.65-.293 1.018l1.253 4.385-3.736-2.491a.995.995 0 0 0-1.109 0l-3.904 2.603 1.05-4.546a1 1 0 0 0-.276-.94l-3.038-2.962 4.09-.326z"></path>
+		</svg>		
+	}
+}
+
+// init used when forming the initial response skeleton
+templ ModelMessage(message LoadedMessageParams, init bool) {
+	<div id={ "response-" + message.Id } class="chat-message from-model">
+		<div class="chat-message-header">
+			<div class="chat-message-model"><i>{ message.Model }:</i></div>
+			<div id="chat-usefulness-container" class="chat-usefulness-container">
+				@UsefulnessButton(message.Id, message.Useful)
+			</div>
+		</div>
+		if init {
+			<div id={ "response-content-" + message.Id }></div>
+		} else {
+			<div id={ "response-content-" + message.Id }>{ message.Message }</div>
+		}
+	</div>
+}
+
+templ InitChatMessage(messageParams LoadedMessageParams) {
+	<div id="chat-messages" hx-swap-oob="beforeend">
+		@HumanMessage(messageParams.Message)
+		@ModelMessage(messageParams, true)
+	</div>
+}
+
 templ LoadedThread(threadTitle string, messages []LoadedMessageParams) {
 	<div id="thread-title" hx-swap-oob="innerHTML">
 		{ threadTitle }
 	</div>
 	for _, message := range messages {
 		if message.Sender == "human" {
-			<div class="chat-message from-user">
-				<div class="chat-message-user"><i>user:</i></div>
-				{ message.Message }
-			</div>
+			@HumanMessage(message.Message)
 		} else if message.Sender == "model" {
-			<div id={ "response-" + message.Id } class="chat-message from-model">
-				<div class="chat-message-header">
-					<div class="chat-message-model"><i>{ message.Model }:</i></div>
-					if message.Useful {
-						<svg
-							class="useful-chat-icon"
-							hx-post={ "http://127.0.0.1:8090/chat/useful/" + message.Id }
-							hx-trigger="click consume"
-							hx-target="this"
-							hx-swap="outerHTML"
-							xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
-						><path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
-						</svg>
-					} else {
-						<svg
-							class="useful-chat-icon"
-							hx-post={ "http://127.0.0.1:8090/chat/useful/" + message.Id }
-							hx-trigger="click consume"
-							hx-target="this"
-							hx-swap="outerHTML"
-							xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
-						><path d="m6.516 14.323-1.49 6.452a.998.998 0 0 0 1.529 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082a1 1 0 0 0-.59-1.74l-5.701-.454-2.467-5.461a.998.998 0 0 0-1.822 0L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.214 4.107zm2.853-4.326a.998.998 0 0 0 .832-.586L12 5.43l1.799 3.981a.998.998 0 0 0 .832.586l3.972.315-3.271 2.944c-.284.256-.397.65-.293 1.018l1.253 4.385-3.736-2.491a.995.995 0 0 0-1.109 0l-3.904 2.603 1.05-4.546a1 1 0 0 0-.276-.94l-3.038-2.962 4.09-.326z"></path>
-						</svg>		
-					}
-				</div>
-				<div id={ "response-content-" + message.Id }>{ message.Message }</div>
-			</div>
+			@ModelMessage(message, false)
 		}
 	}
 }
@@ -94,19 +96,11 @@ templ UsefulnessResponse(messageId string, useful bool) {
 	if useful {
 		<p
 			_="on load wait 2s transition opacity to 0 then remove me"
-			class="useful-message-message"
+			class="useful-chat-message"
 		>
 			Message marked as useful
 		</p>
-		<svg
-			class="useful-chat-icon"
-			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
-			hx-trigger="click consume"
-			hx-target="this"
-			hx-swap="outerHTML"
-			xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
-		><path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
-		</svg>
+		@UsefulnessButton(messageId, useful)
 	} else {
 		<p
 			_="on load wait 2s transition opacity to 0 then remove me"
@@ -114,15 +108,7 @@ templ UsefulnessResponse(messageId string, useful bool) {
 		>
 			Message marked as not useful
 		</p>
-		<svg
-			class="useful-chat-icon"
-			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
-			hx-trigger="click consume"
-			hx-target="this"
-			hx-swap="outerHTML"
-			xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"
-		><path d="m6.516 14.323-1.49 6.452a.998.998 0 0 0 1.529 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082a1 1 0 0 0-.59-1.74l-5.701-.454-2.467-5.461a.998.998 0 0 0-1.822 0L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.214 4.107zm2.853-4.326a.998.998 0 0 0 .832-.586L12 5.43l1.799 3.981a.998.998 0 0 0 .832.586l3.972.315-3.271 2.944c-.284.256-.397.65-.293 1.018l1.253 4.385-3.736-2.491a.995.995 0 0 0-1.109 0l-3.904 2.603 1.05-4.546a1 1 0 0 0-.276-.94l-3.038-2.962 4.09-.326z"></path>
-		</svg>		
+		@UsefulnessButton(messageId, useful)
 	}	
 }
 

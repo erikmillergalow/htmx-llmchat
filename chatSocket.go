@@ -121,10 +121,11 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 			}
 
 			// send the initial response skeleton
-			chatParams := templates.ChatMessageParams{
+			chatParams := templates.LoadedMessageParams{
 				Id:          modelMessageRecord.Id,
-				UserMessage: htmxMsg.Msg,
+				Message:     htmxMsg.Msg,
 				Model:       chatModelName,
+				Useful:		 false,
 			}
 			chatComponent := templates.InitChatMessage(chatParams)
 

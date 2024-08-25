@@ -29,7 +29,9 @@ func OpenSearch(c echo.Context, app *pocketbase.PocketBase) error {
 
 	var usedModels []string
 	for _, message := range allChatParams {
-		usedModels = append(usedModels, message.Model)
+		if !slices.Contains(usedModels, message.Model) {
+			usedModels = append(usedModels, message.Model)
+		}
 	}
 
 	c.Response().Writer.WriteHeader(200)
@@ -46,22 +48,24 @@ func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) err
 	searchValue := data["search-input"].(string)
 	tagFilter := data["tag"].(string)
 	modelFilter := data["model"].(string)
+	usefulFilter := data["useful"].(string)
 
 	var relevantMessages []templates.LoadedMessageParams
-	if searchValue != "" {
-		app.Dao().DB().
-			Select("*").
-			From("chat").
-			Where(dbx.Like("message", searchValue)).
-			OrderBy("created ASC").
-			All(&relevantMessages)
-	} else {
-		app.Dao().DB().
-			Select("*").
-			From("chat").
-			OrderBy("created ASC").
-			All(&relevantMessages)
+	query := app.Dao().DB().
+		Select("*").
+		From("chat")
+
+	if usefulFilter == "useful" {
+		query = query.Where(dbx.NewExp("useful = true"))
+	} else if usefulFilter == "not-useful" {
+		query = query.Where(dbx.NewExp("thread_id NOT IN (SELECT DISTINCT thread_id FROM chat WHERE useful = true)"))
 	}
+
+	if searchValue != "" {
+		query = query.AndWhere(dbx.Like("message", searchValue))
+	}
+
+	query.All(&relevantMessages)
 
 	var relevantMessageIds []string
 	for _, message := range relevantMessages {
@@ -74,6 +78,7 @@ func Search(data map[string]any, c echo.Context, app *pocketbase.PocketBase) err
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to fetch threads relevant to search")
 	}
+
 
 	// convert slice of records to struct templ expects, need to check for better ways to handle this...
 	var relevantThreads []templates.ThreadListEntryParams

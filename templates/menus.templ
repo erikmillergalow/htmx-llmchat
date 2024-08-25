@@ -62,6 +62,12 @@ templ SearchMenu(tagParams []TagParams, models []string) {
                 }
             </select>
 
+            <select class="search-filter" name="useful">
+                <option value="any">Any usefulness</option>
+                <option value="useful">Only threads with useful messages</option>
+                <option value="not-useful">Only threads without useful messages</option>
+            </select>
+
             <button
                 class="submit-search-button"
             >

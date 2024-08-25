@@ -368,6 +368,15 @@ li {
     margin-bottom: 0.5rem;
 }
 
+.chat-usefulness-container {
+    display: flex;
+    flex-direction: row;
+}
+
+.useful-chat-message {
+    margin-right: 0.25rem;
+}
+
 .useful-chat-icon {
     border-radius: 5px;
     width: 20px;
