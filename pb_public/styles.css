@@ -396,13 +396,21 @@ li {
     font-size: 10px;
 }
 
+.chat-message-model {
+    margin-bottom: 0.5rem;
+    font-size: 10px;
+}
+
 .from-user {
     background-color: #c0d0c7;
 }
 
 .from-model {
     background-color: #b2c1b8;
+}
 
+.from-error {
+    background-color: #c68e8e;
 }
 
 .input-container {

@@ -68,6 +68,19 @@ templ ModelMessage(message LoadedMessageParams, init bool) {
 	</div>
 }
 
+templ ErrorChatResponse(message string) {
+	<div id="chat-messages" hx-swap-oob="beforeend">
+		@ErrorChatMessage(message)
+	</div>
+}
+
+templ ErrorChatMessage(message string) {
+	<div class="chat-message from-error">
+		<div class="chat-message-error"><i>system:</i></div>
+		{ message }
+	</div>
+}
+
 templ InitChatMessage(messageParams LoadedMessageParams) {
 	<div id="chat-messages" hx-swap-oob="beforeend">
 		@HumanMessage(messageParams.Message)
@@ -84,6 +97,8 @@ templ LoadedThread(threadTitle string, messages []LoadedMessageParams) {
 			@HumanMessage(message.Message)
 		} else if message.Sender == "model" {
 			@ModelMessage(message, false)
+		} else if message.Sender == "system" {
+			@ErrorChatMessage(message.Message)
 		}
 	}
 }
