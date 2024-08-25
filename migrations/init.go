@@ -331,6 +331,20 @@ func init() {
                     "max": null,
                     "pattern": ""
                 }
+            },
+            {
+                "system": false,
+                "id": "r7iqatfr",
+                "name": "username",
+                "type": "text",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "min": null,
+                    "max": null,
+                    "pattern": ""
+                }
             }
         ],
         "indexes": [],
@@ -398,6 +412,22 @@ func init() {
                 "unique": false,
                 "options": {
                     "collectionId": "6w4ignk5ustvxw4",
+                    "cascadeDelete": false,
+                    "minSelect": null,
+                    "maxSelect": null,
+                    "displayFields": null
+                }
+            },
+            {
+                "system": false,
+                "id": "whrnrws2",
+                "name": "user_access",
+                "type": "relation",
+                "required": false,
+                "presentable": false,
+                "unique": false,
+                "options": {
+                    "collectionId": "_pb_users_auth_",
                     "cascadeDelete": false,
                     "minSelect": null,
                     "maxSelect": null,
