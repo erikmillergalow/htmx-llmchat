@@ -5,7 +5,6 @@ type ApiParams struct {
     Name string `db:"name" json:"name"`
     Url string `db:"url" json:"url"`
     ApiKey string `db:"api_key" json:"api_key"`
-    ApiModelName string `db:"api_model_name" json:"api_model_name"`
 }
 
 templ SelectApiStatus(msg string) {
@@ -111,7 +110,7 @@ templ ApiEditor(params ApiParams) {
                 hx-target={ "#model-editor-" + params.Id }
                 hx-swap="outerHTML"
                 hx-confirm="Delete API definition?"
-                class="delete-model-icon icon-hover"
+                class="delete-api-icon icon-hover"
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"

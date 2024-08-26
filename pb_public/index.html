@@ -227,5 +227,60 @@
         });
     });
 </script>
+<script>
+    function updateColor(event) {
+        if (event.target.classList.contains('theme-input')) {
+            const inputId = event.target.id; 
+            const newColorValue = event.target.value;
+
+            const cssVariable = `--${inputId}`;
+
+            document.documentElement.style.setProperty(cssVariable, newColorValue);
+
+            let theme = JSON.parse(localStorage.getItem('theme')) || {};
+            theme[inputId] = newColorValue;
+
+            localStorage.setItem('theme', JSON.stringify(theme));
+        }
+    }
+
+    document.addEventListener('change', updateColor);
+
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedTheme = JSON.parse(localStorage.getItem('theme'));
+        if (savedTheme) {
+            for (let key in savedTheme) {
+                if (savedTheme.hasOwnProperty(key)) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = savedTheme[key];
+                    }
+
+                    document.documentElement.style.setProperty(`--${key}`, savedTheme[key]);
+                }
+            }
+        }
+    });
+    document.body.addEventListener("config-opened", function() {
+        const savedTheme = JSON.parse(localStorage.getItem('theme'));
+        if (savedTheme) {
+            for (let key in savedTheme) {
+                if (savedTheme.hasOwnProperty(key)) {
+                    const input = document.getElementById(key);
+                    if (input) {
+                        input.value = savedTheme[key];
+                    }
+
+                    document.documentElement.style.setProperty(`--${key}`, savedTheme[key]);
+                }
+            }
+        }
+
+        document.getElementById("reset-theme-button").addEventListener("click", function() {
+            localStorage.removeItem("theme");
+            window.location.reload();
+        });
+    });
+</script>
 
 </html>

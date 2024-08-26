@@ -19,6 +19,8 @@ func OpenConfig(c echo.Context, app *pocketbase.PocketBase) error {
 		From("settings").
 		All(&settings)
 
+
+	c.Response().Header().Set("HX-Trigger-After-Settle", "config-opened")
 	c.Response().Writer.WriteHeader(200)
 	loadedSettingsMenu := templates.SideBarMenu(settings[0])
 	err := loadedSettingsMenu.Render(context.Background(), c.Response().Writer)

@@ -18,6 +18,116 @@ templ SideBarMenu(params SideBarMenuParams) {
         hx-swap="innerHTML"
         hx-trigger="load"
     ></div>
+
+    <div class="theme-config">
+        <div class="theme-color-section">
+            <label for="sidebar-color">Sidebar Color:</label>
+            <input id="sidebar-color" class="theme-input" type="color" value="#b1b7bf"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="sidebar-item-border-color">Sidebar Item Border Color:</label>
+            <input id="sidebar-item-border-color" class="theme-input" type="color" value="#666666"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="sidebar-hover-color">Sidebar Hover Color:</label>
+            <input id="sidebar-hover-color" class="theme-input" type="color" value="#9a9fa6"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="font-color">Font Color:</label>
+            <input id="font-color" class="theme-input" type="color" value="#000000"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="icon-color">Icon Color:</label>
+            <input id="icon-color" class="theme-input" type="color" value="#000000"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="icon-hover-color">Icon Hover Color:</label>
+            <input id="icon-hover-color" class="theme-input" type="color" value="#7a8086"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="add-tag-color">Add Tag Color:</label>
+            <input id="add-tag-color" class="theme-input" type="color" value="gray"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="tag-hover-color">Tag Hover Color:</label>
+            <input id="tag-hover-color" class="theme-input" type="color" value="#b1c7ba"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="text-input-color">Text Input Color:</label>
+            <input id="text-input-color" class="theme-input" type="color" value="#ffffff"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="send-button-color">Send Button Color:</label>
+            <input id="send-button-color" class="theme-input" type="color" value="#ededf0"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="gutter-gradient-color">Gutter Gradient Color:</label>
+            <input id="gutter-gradient-color" class="theme-input" type="color" value="#67a843"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="chat-background-color">Chat Background Color:</label>
+            <input id="chat-background-color" class="theme-input" type="color" value="#b1c7ba"></input>
+        </div>
+        
+        <div class="theme-color-section">
+            <label for="chat-items-border-color">Chat Items Border Color:</label>
+            <input id="chat-items-border-color" class="theme-input" type="color" value="#666666"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="user-message-color">User Message Color:</label>
+            <input id="user-message-color" class="theme-input" type="color" value="#c0d0c7"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="model-message-color">Model Message Color:</label>
+            <input id="model-message-color" class="theme-input" type="color" value="#b2c1b8"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="chat-error-color">Chat Error Color:</label>
+            <input id="chat-error-color" class="theme-input" type="color" value="#c68e8e"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="disabled-chat-input">Disabled Chat Input:</label>
+            <input id="disabled-chat-input" class="theme-input" type="color" value="#b1f7ba"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="status-response-color">Status Response Color:</label>
+            <input id="status-response-color" class="theme-input" type="color" value="#e6f0f0"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="scrollbar-color">Scrollbar Color:</label>
+            <input id="scrollbar-color" class="theme-input" type="color" value="#666666"></input>
+        </div>
+
+        <div class="theme-color-section">
+            <label for="timestamp-color">Timestamp Color:</label>
+            <input id="timestamp-color" class="theme-input" type="color" value="#393939"></input>
+        </div>
+        <div class="theme-buttons">
+            <button
+                id="reset-theme-button"
+                class="reset-theme-button"
+            >
+                Reset theme
+            </button>
+        </div>
+    </div>
 }
 
 css percentStyle(percent float64) {

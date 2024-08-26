@@ -184,7 +184,6 @@ func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
 		Name:         "",
 		Url:          "",
 		ApiKey:       "",
-		ApiModelName: "",
 	}
 
 	c.Response().Writer.WriteHeader(200)

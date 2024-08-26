@@ -27,7 +27,7 @@ func InitializeChat(c echo.Context, app *pocketbase.PocketBase) error {
 			return c.String(http.StatusInternalServerError, "failed to render no APIs info")
 		}
 	} else {
-	  c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
+		c.Response().Header().Set("HX-Trigger-After-Settle", "chat-window-loaded")
 		c.Response().Writer.WriteHeader(200)
 		chat := templates.ActiveChat()
 		err := chat.Render(context.Background(), c.Response().Writer)

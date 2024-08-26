@@ -147,7 +147,7 @@ li {
     height: 100%;
     overflow: scroll;
     scrollbar-width: thin;
-    scrollbar-color: #666 transparent;
+    scrollbar-color: var(--scrollbar-color) transparent;
 }
 
 .side-bar-menu {
@@ -430,6 +430,7 @@ li {
 }
 
 .send-message-button {
+    background-color: var(--send-button-color);
     position: absolute;
     right: 1rem;
     bottom: 1rem;
@@ -723,4 +724,30 @@ li {
     background-color: var(--status-response-color);
     padding: 0.75rem;
     border-radius: 2rem;
+}
+
+.theme-config {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.5rem;
+}
+
+.theme-color-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-size: 15px;
+}
+
+.theme-label {
+    font-size: 15px;
+    margin-right: 0.25rem;
+}
+
+.theme-buttons {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 0.5rem;
 }
