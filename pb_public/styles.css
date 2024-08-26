@@ -109,7 +109,7 @@ li {
 }
 
 .gutter.gutter-horizontal {
-    background: linear-gradient(to right, #d3d3d3, var(--gutter-gradient-color));
+    background: linear-gradient(to left, #d3d3d3, var(--gutter-gradient-color));
     cursor: col-resize;
 }
 

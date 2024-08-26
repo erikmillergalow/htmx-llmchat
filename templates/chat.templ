@@ -174,7 +174,7 @@ templ ActiveChat() {
 			id="sender-form"
 			class="send-message-form"
 			ws-send
-			hx-trigger="keyup[keyCode==13]"
+			hx-trigger="keyup[keyCode==13&&!shiftKey]"
 			hx-on::after-request="console.log('after')"
 		>
 			<input id="thread-id-chat" name="thread-id-chat" type="hidden"/>
