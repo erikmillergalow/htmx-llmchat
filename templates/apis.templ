@@ -10,7 +10,7 @@ type ApiParams struct {
 
 templ SelectApiStatus(msg string) {
     <p
-        class="select-model-status"
+        class="select-api-status"
         _="on load wait 2s transition opacity to 0 then remove me"
     >
         { msg }
@@ -86,7 +86,7 @@ templ ApiModelsUnavailable() {
 
 templ NewApiEditor(params ApiParams) {
     <div
-        id="model-editors-list"
+        id="api-editors-list"
         hx-swap-oob="afterbegin"
     >
         @ApiEditor(params)
@@ -99,17 +99,18 @@ templ ApiEditor(params ApiParams) {
         hx-target="this"
         hx-swap="beforeend"
         id={ "model-editor-" + params.Id }
-        class="model-editor"
+        class="api-editor"
     >
         <div
-            class="delete-model"
+            class="delete-api"
         >
-            <label class="model-label">Display name:</label>
+            <label class="api-label">Display name:</label>
             <svg
                 hx-delete={ "http://127.0.0.1:8090/apis/" + params.Id }
                 hx-trigger="click"
                 hx-target={ "#model-editor-" + params.Id }
                 hx-swap="outerHTML"
+                hx-confirm="Delete API definition?"
                 class="delete-model-icon icon-hover"
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -127,36 +128,30 @@ templ ApiEditor(params ApiParams) {
             </svg>
         </div>
         <input
-            id={ "model-name-" + params.Id }
             name="display-name"
-            class="model-input"
+            class="api-input"
             placeholder="Enter display name..."
             value={ params.Name }
         ></input>
 
-        <label class="model-label">URL:</label>
+        <label class="api-label">URL:</label>
         <input
-            id={ "model-url-" + params.Id }
             name="url"
-            class="model-input"
+            class="api-input"
             placeholder="Enter URL..."
             value={ params.Url }
         ></input>
 
-        <label class="model-label">API key:</label>
+        <label class="api-label">API key:</label>
         <input
-            id={ "model-key-" + params.Id }
             name="api-key"
-            class="model-input"
+            class="api-input"
             placeholder="Enter API key..."
             type="password"
             value={ params.ApiKey }
         ></input>
 
-        <button
-            id="model-submit-button"
-            class="model-submit-button"
-        >
+        <button class="api-submit-button">
             Update
         </button>
     </form>
@@ -172,17 +167,17 @@ templ ModelUpdateResult() {
 }
 
 templ ApiEditorsList(paramsList []ApiParams) {
-    <div class="models-menu">
+    <div class="apis-menu">
         <button
             hx-post="http://127.0.0.1:8090/apis/create"
             hx-trigger="click"
-            hx-target="#model-editors-list"
+            hx-target="#api-editors-list"
             hx-swap="none"
             class="create-model-button"
         >
             Add new model
         </button>
-        <div id="model-editors-list">
+        <div id="api-editors-list">
             for _, params := range paramsList {
                 @ApiEditor(params)
             }
@@ -192,7 +187,7 @@ templ ApiEditorsList(paramsList []ApiParams) {
 
 templ DeletedModel() {
     <p
-        class="delete-model-status"
+        class="delete-api-status"
         _="on load wait 2s transition opacity to 0 then remove me"
     >
         Model deleted...
