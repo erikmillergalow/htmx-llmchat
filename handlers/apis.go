@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"context"
@@ -156,7 +156,6 @@ func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
 		"url":            "",
 		"api_key":        "",
 		"api_model_name": "",
-		"color":          "",
 	})
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to create new api DB record")
@@ -186,7 +185,6 @@ func CreateApi(c echo.Context, app *pocketbase.PocketBase) error {
 		Url:          "",
 		ApiKey:       "",
 		ApiModelName: "",
-		Color:        "",
 	}
 
 	c.Response().Writer.WriteHeader(200)
@@ -209,7 +207,6 @@ func UpdateApi(id string, data map[string]any, c echo.Context, app *pocketbase.P
 	apiRecord.Set("name", data["display-name"].(string))
 	apiRecord.Set("url", data["url"].(string))
 	apiRecord.Set("api_key", data["api-key"].(string))
-	apiRecord.Set("color", data["color"].(string))
 
 	if err := app.Dao().SaveRecord(apiRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update api record")

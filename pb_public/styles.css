@@ -1,3 +1,26 @@
+:root {
+    --sidebar-color: #b1b7bf;
+    --sidebar-item-border-color: #666;
+    --sidebar-hover-color: #9a9fa6;
+    --font-color: #000;
+    --icon-color: #000;
+    --icon-hover-color: #7a8086;
+    --add-tag-color: gray;
+    --tag-hover-color: #b1c7ba;
+    --text-input-color: white;
+    --send-button-color: #ededf0;
+    --gutter-gradient-color: #67a84366;
+    --chat-background-color: #b1c7ba;
+    --chat-items-border-color: #666;
+    --user-message-color: #c0d0c7;
+    --model-message-color: #b2c1b8;
+    --chat-error-color: #c68e8e;
+    --disabled-chat-input: #b1f7ba;
+    --status-response-color: #e6f0f0;
+    --scrollbar-color: #666;
+    --timestamp-color: #393939;
+}
+
 @font-face {
     font-family: 'Hack';
     src: url('lib/ttf/Hack-Regular.ttf');
@@ -79,14 +102,18 @@ li {
 }
 
 .gutter.gutter-horizontal {
-    background: linear-gradient(to right, #d3d3d3, #67a84366);
+    background: linear-gradient(to right, #d3d3d3, var(--gutter-gradient-color));
     cursor: col-resize;
 }
 
 .gutter.gutter-vertical {
-    background: linear-gradient(to bottom, #d3d3d3, #67a84366);
+    background: linear-gradient(to bottom, #d3d3d3, var(--gutter-gradient-color));
     cursor: col-resize;
     height: 4px;
+}
+
+.icon-hover:hover {
+    background-color: var(--icon-hover-color);
 }
 
 .ui-container {
@@ -100,7 +127,7 @@ li {
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #b1b7bf;
+    background-color: var(--sidebar-color);
     border-right: solid #66666166;
     border-width: 0.5px;
     padding: 0.25rem;
@@ -146,18 +173,10 @@ li {
     transition 0.3s all;
 }
 
-.menu-icon:hover {
-    background-color: #9a9fa6;
-}
-
 .apis-icon {
     margin-left: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
-}
-
-.apis-icon:hover {
-    background-color: #9a9fa6;
 }
 
 .models-menu {
@@ -173,14 +192,14 @@ li {
     flex-direction: column;
     padding: 0.25rem;
     margin-top: 0.25rem;
-    border-top: solid 0.75px #666;
-    border-bottom: solid 0.75px #666;
+    border-top: solid 0.75px var(--sidebar-item-border-color);
+    border-bottom: solid 0.75px var(--sidebar-item-border-color);
     transition: 0.3s all;
     border-radius: 5px;
 }
 
 .model-editor:hover {
-    background-color: #9a9fa6;
+    background-color: var(--sidebar-hover-color);
 }
 
 .model-input {
@@ -210,21 +229,19 @@ li {
     margin-bottom: 0.25rem;
 }
 
-.delete-model-icon:hover {
-    background-color: #885959;
-}
-
 .delete-model-status {
     top: 3rem;
     right: 0.5rem;
-    background-color: #e6f0f0;
+    background-color: var(--status-response-color) 
     padding: 0.75rem;
     border-radius: 2rem;
     margin: 0.25rem;
     font-size: 14px;
 }
 
-.model-submit-button {}
+.model-submit-button {
+    margin-bottom: 0.5rem;
+}
 
 .model-names-select {
     width: 100%;
@@ -234,7 +251,7 @@ li {
 
 .model-update-result {
     margin-top: 0.5rem;
-    background-color: #e6f0f0;
+    background-color: var(--status-response-color);
     padding: 0.75rem;
     border-radius: 2rem;
 }
@@ -245,18 +262,10 @@ li {
     transition: 0.3s all;
 }
 
-.search-icon:hover {
-    background-color: #9a9fa6;
-}
-
 .sort-icon {
     margin-right: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
-}
-
-.sort-icon:hover {
-    background-color: #9a9fa6;
 }
 
 .sort-select {
@@ -295,17 +304,9 @@ li {
     transition: 0.3s all;
 }
 
-.threads-icon:hover {
-    background-color: #9a9fa6;
-}
-
 .new-thread-icon {
     border-radius: 5px;
     transition: 0.3s all;
-}
-
-.new-thread-icon:hover {
-    background-color: #9a9fa6;
 }
 
 .chat-container {
@@ -315,7 +316,7 @@ li {
 .chat-window {
     display: flex;
     flex-direction: column;
-    background-color: #b1c7ba;
+    background-color: var(--chat-background-color);
     padding-top: 0.25rem;
     padding-right: 0.25rem;
     padding-left: 0.25rem;
@@ -347,15 +348,15 @@ li {
     flex-direction: column;
     overflow: scroll;
     scrollbar-width: thin;
-    scrollbar-color: #666 transparent;
+    scrollbar-color: var(--scrollbar-color) transparent;
 }
 
 .chat-message {
     padding: 0.5rem;
     margin-top: 0.25rem;
     border-radius: 5px;
-    border-top: solid 0.75px #666;
-    border-bottom: solid 0.75px #666;
+    border-top: solid 0.75px var(--chat-items-border-color);   
+    border-bottom: solid 0.75px var(--chat-items-border-color);
     white-space: preserve;
 }
 
@@ -383,14 +384,6 @@ li {
     transition: 0.3s all;
 }
 
-.useful-chat-icon:hover {
-    background-color: #9a9fa6;
-}
-
-.chat-message-model {
-    font-size: 10px;
-}
-
 .chat-message-user {
     margin-bottom: 0.5rem;
     font-size: 10px;
@@ -402,20 +395,20 @@ li {
 }
 
 .from-user {
-    background-color: #c0d0c7;
+    background-color: var(--user-message-color);
 }
 
 .from-model {
-    background-color: #b2c1b8;
+    background-color: var(--model-message-color);
 }
 
 .from-error {
-    background-color: #c68e8e;
+    background-color: var(--chat-error-color);
 }
 
 .input-container {
     display: flex;
-    background-color: #b1f7ba;
+    background-color: var(--disabled-chat-input);
     border-top: solid #66666166;
     border-width: 0.5px;
     height: 100%;
@@ -453,15 +446,15 @@ li {
 .thread-list-entry {
     padding: 0.25rem;
     margin-top: 0.25rem;
-    border-top: solid 0.75px #666;
-    border-bottom: solid 0.75px #666;
+    border-top: solid 0.75px var(--sidebar-item-border-color);
+    border-bottom: solid 0.75px var(--sidebar-item-border-color);
     transition: 0.3s all;
     border-radius: 5px;
     position: relative;
 }
 
 .thread-list-entry:hover {
-    background-color: #9a9fa6;
+    background-color: var(--sidebar-hover-color);
 }
 
 .thread-entry-title {
@@ -483,14 +476,10 @@ li {
     transition: 0.3s all;
 }
 
-.delete-thread-icon:hover {
-    background-color: #885959;
-}
-
 .delete-thread-status {
     top: 3rem;
     right: 0.5rem;
-    background-color: #e6f0f0;
+    background-color: var(--status-response-color);
     padding: 0.75rem;
     border-radius: 2rem;
     margin: 0.25rem;
@@ -507,16 +496,8 @@ li {
 
 .timestamp {
     font-size: 11px;
-    color: #393939;
+    color: var(--timestamp-color);
     width: 100%;
-}
-
-.start {
-    color: #393939;
-}
-
-.end {
-    color: #393939;
 }
 
 .tags-container {
@@ -540,7 +521,7 @@ li {
 }
 
 .tag:hover {
-    border: 1px solid #b1c7ba;
+    border: 1px solid var(--tag-hover-color);
 }
 
 .tag-modifier {
@@ -553,8 +534,8 @@ li {
     margin-top: 0.5rem;
 
     padding: 0.25rem;
-    border-top: solid 0.75px #666;
-    border-bottom: solid 0.75px #666;
+    border-top: solid 0.75px var(--sidebar-item-border-color);
+    border-bottom: solid 0.75px var(--sidebar-item-border-color);
     border-radius: 5px;
 }
 
@@ -605,7 +586,7 @@ li {
 }
 
 .existing-tag:hover {
-    border: 1px solid #b1c7ba;
+    border: 1px solid var(--tag-hover-color);
 }
 
 .tag-color-input {
@@ -661,8 +642,8 @@ li {
 .model-stats-item {
     padding: 0.25rem;
     margin-top: 0.25rem;
-    border-top: solid 0.75px #666;
-    border-bottom: solid 0.75px #666;
+    border-top: solid 0.75px var(--sidebar-item-border-color);
+    border-bottom: solid 0.75px var(--sidebar-item-border-color);
     transition: 0.3s all;
     border-radius: 5px;
 }
@@ -728,8 +709,6 @@ li {
     width: 100%;
 }
 
-.api-select {}
-
 .chat-api-select {
     display: flex;
     flex-direction: row;
@@ -740,7 +719,7 @@ li {
     position: absolute;
     top: 3rem;
     right: 0.5rem;
-    background-color: #e6f0f0;
+    background-color: var(--status-response-color);
     padding: 0.75rem;
     border-radius: 2rem;
 }

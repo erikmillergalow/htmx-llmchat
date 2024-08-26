@@ -6,7 +6,6 @@ type ApiParams struct {
     Url string `db:"url" json:"url"`
     ApiKey string `db:"api_key" json:"api_key"`
     ApiModelName string `db:"api_model_name" json:"api_model_name"`
-    Color string `db:"color" json:"color"`
 }
 
 templ SelectApiStatus(msg string) {
@@ -26,7 +25,6 @@ templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
         hx-swap="afterend"
         id="api-select"
         name="api"
-        class="api-select"
         value={ selectedApiId }
     >
         for _, params := range paramsList {
@@ -112,7 +110,7 @@ templ ApiEditor(params ApiParams) {
                 hx-trigger="click"
                 hx-target={ "#model-editor-" + params.Id }
                 hx-swap="outerHTML"
-                class="delete-model-icon"
+                class="delete-model-icon icon-hover"
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
                 height="24"
@@ -153,15 +151,6 @@ templ ApiEditor(params ApiParams) {
             placeholder="Enter API key..."
             type="password"
             value={ params.ApiKey }
-        ></input>
-
-        <label class="model-label">Color:</label>
-        <input
-            id={ "model-color" + params.Id }
-            name="color"
-            class="model-input"
-            type="color"
-            value={ params.Color }
         ></input>
 
         <button

@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
+	"github.com/erikmillergalow/htmx-llmchat/handlers"
 
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v5"
@@ -39,49 +39,69 @@ func main() {
 			From("settings").
 			All(&settings)
 
+		// initialize chat window if an API is available
 		e.Router.GET("/chat", func(c echo.Context) error {
-			fmt.Println("initializing chat")
-			return InitializeChat(c, app)
+			return handlers.InitializeChat(c, app)
 		})
 
+		// toggle chat message usefulness tag
 		e.Router.POST("/chat/useful/:messageId", func(c echo.Context) error {
 			messageId := c.PathParam("messageId")
-			return ToggleMessageUsefulness(messageId, c, app)
+			return handlers.ToggleMessageUsefulness(messageId, c, app)
 		})
 
+		// populate threads list in sidebar
 		e.Router.GET("/threads", func(c echo.Context) error {
-			return GetThreadList("creation", c, app)
+			return handlers.GetThreadList("creation", c, app)
 		})
 
+		// click on thread to load messages
 		e.Router.GET("/thread/:id", func(c echo.Context) error {
 			threadId := c.PathParam("id")
-			return GetThread(threadId, c, app)
+			return handlers.GetThread(threadId, c, app)
 		})
 
+		// open thread title editor
 		e.Router.GET("/thread/title/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
-			return EditThreadTitle(id, c, app)
+			return handlers.EditThreadTitle(id, c, app)
 		})
 
+		// update thread title
 		e.Router.PUT("/thread/title/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
 			title := data["title"].(string)
-			return SaveThreadTitle(id, title, c, app)
+			return handlers.SaveThreadTitle(id, title, c, app)
 		})
 
+		// sort threads list
+		e.Router.GET("/sort/:method", func(c echo.Context) error {
+			method := c.PathParam("method")
+			return handlers.GetThreadList(method, c, app)
+		})
+
+		// create new thread
 		e.Router.POST("/thread/create", func(c echo.Context) error {
-			return CreateThread(c, app)
+			return handlers.CreateThread(c, app)
 		})
 
+		// delete thread
 		e.Router.DELETE("/thread/:threadId", func(c echo.Context) error {
 			id := c.PathParam("threadId")
-			return DeleteThread(id, c, app)
+			return handlers.DeleteThread(id, c, app)
 		})
 		
 		// load APIs for chat window dropdown
 		e.Router.GET("/apis", func(c echo.Context) error {
-			return LoadApis(c, app)
+			return handlers.LoadApis(c, app)
+		})
+
+		// attempt to load list of models an API provides
+		e.Router.POST("/apis/models", func(c echo.Context) error {
+			data := apis.RequestInfo(c).Data
+			id := data["api"].(string)
+			return handlers.LoadApiModels(id, c, app)
 		})
 
 		// select an API from chat window dropdown
@@ -89,124 +109,119 @@ func main() {
 			//model := c.QueryParam("model")
 			data := apis.RequestInfo(c).Data
 			id := data["api"].(string)
-			return SelectApi(id, &selectedModel, c, app)
-		})
-
-		// attempt to load list of models an API provides
-		e.Router.POST("/apis/models", func(c echo.Context) error {
-			data := apis.RequestInfo(c).Data
-			id := data["api"].(string)
-			return LoadApiModels(id, c, app)
+			return handlers.SelectApi(id, &selectedModel, c, app)
 		})
 
 		// select a model from chat window dropdown
 		e.Router.POST("/apis/model", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
 			name := data["api-model-name"].(string)
-			return SelectModel(name, c, app)
+			return handlers.SelectModel(name, c, app)
 		})
 
 		// open API editor in the sidebar
 		e.Router.GET("/apis/open", func(c echo.Context) error {
-			return OpenApiEditor(c, app)
+			return handlers.OpenApiEditor(c, app)
 		})
 
 		// create new API in the sidebar
 		e.Router.POST("/apis/create", func(c echo.Context) error {
-			return CreateApi(c, app)
+			return handlers.CreateApi(c, app)
 		})
 
 		// delete an API in the sidebar
 		e.Router.DELETE("/apis/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
-			return DeleteApi(id, c, app)
+			return handlers.DeleteApi(id, c, app)
 		})
 
 		// update existing API in the sidebar
 		e.Router.PATCH("/apis/update/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
-			return UpdateApi(id, data, c, app)
+			return handlers.UpdateApi(id, data, c, app)
 		})
 
+		// open editor to create new tag
 		e.Router.GET("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
-			return CreateTag(id, c, app)
+			return handlers.CreateTag(id, c, app)
 		})
 
+		// create new tag and add to current thread
 		e.Router.POST("/thread/tag/:id", func(c echo.Context) error {
 			id := c.PathParam("id")
 			data := apis.RequestInfo(c).Data
-			return SaveTag(id, data, c, app)
+			return handlers.SaveTag(id, data, c, app)
 		})
 
 		// open editor to update tag, remove from thread, or delete entirely
 		e.Router.GET("/tag/:tagId/thread/:threadId", func(c echo.Context) error {
 			tagId := c.PathParam("tagId")
 			threadId := c.PathParam("threadId")
-			return OpenTagModifier(tagId, threadId, c, app)
+			return handlers.OpenTagModifier(tagId, threadId, c, app)
 		})
 
+		// update tag and reload threads
 		e.Router.POST("/tag/update/:tagId", func(c echo.Context) error {
 			tagId := c.PathParam("tagId")
 			data := apis.RequestInfo(c).Data
-			return UpdateTag(tagId, data, c, app)
+			return handlers.UpdateTag(tagId, data, c, app)
 		})
 
+		// delete tag and reload threads
 		e.Router.DELETE("/tag/:tagId", func(c echo.Context) error {
 			tagId := c.PathParam("tagId")
-			return DeleteTag(tagId, c, app)
+			return handlers.DeleteTag(tagId, c, app)
 		})
 
 		// remove tag from thread
 		e.Router.DELETE("/thread/:threadId/tag/:tagId", func(c echo.Context) error {
 			threadId := c.PathParam("threadId")
 			tagId := c.PathParam("tagId")
-			return RemoveTagFromThread(threadId, tagId, c, app)
+			return handlers.RemoveTagFromThread(threadId, tagId, c, app)
 		})
 
-		// add tag to thread
+		// add existing tag to thread
 		e.Router.POST("/thread/:threadId/tag/:tagId", func(c echo.Context) error {
 			threadId := c.PathParam("threadId")
 			tagId := c.PathParam("tagId")
-			return AddExistingTagToThread(threadId, tagId, c, app)
+			return handlers.AddExistingTagToThread(threadId, tagId, c, app)
 		})
 
 		// open config
 		e.Router.GET("/config", func(c echo.Context) error {
-			return OpenConfig(c, app)
+			return handlers.OpenConfig(c, app)
 		})
 
+		// fetch model stats
 		e.Router.GET("/stats", func(c echo.Context) error {
-			return GetModelStats(c, app)
+			return handlers.GetModelStats(c, app)
 		})
 		// update config
 		e.Router.PUT("/config", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
-			return SaveConfig(data, c, app)
+			return handlers.SaveConfig(data, c, app)
 		})
 
 		e.Router.GET("/config/done", func(c echo.Context) error {
-			return GetThreadList("creation", c, app)
+			return handlers.GetThreadList("creation", c, app)
 		})
 
-		e.Router.GET("/sort/:method", func(c echo.Context) error {
-			method := c.PathParam("method")
-			return GetThreadList(method, c, app)
-		})
-
+		// open search in sidebar
 		e.Router.GET("/search", func(c echo.Context) error {
-			return OpenSearch(c, app)
+			return handlers.OpenSearch(c, app)
 		})
 
+		// search for threads in sidebar
 		e.Router.POST("/search", func(c echo.Context) error {
 			data := apis.RequestInfo(c).Data
-			return Search(data, c, app)
+			return handlers.Search(data, c, app)
 		})
 
-		// websocket connection:
+		// open websocket connection for chat:
 		e.Router.GET("/ws", func(c echo.Context) error {
-			return OpenChatSocket(&selectedModel, c, app)
+			return handlers.OpenChatSocket(&selectedModel, c, app)
 		})
 
 		return nil

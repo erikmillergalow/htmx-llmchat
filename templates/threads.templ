@@ -126,7 +126,7 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
             hx-target={ "#thread-" + params.Id }
             hx-swap="outerHTML"
             hx-confirm="Delete thread and all associated messages?"
-            class="delete-thread-icon"
+            class="delete-thread-icon icon-hover"
             xmlns="http://www.w3.org/2000/svg"
             width="24"
             height="24"
@@ -148,8 +148,8 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
         <!-- <p class="thread-entry-message"> { params.LastMessage } </p> -->
 
         <div class="dual-timestamps-container">
-            <p class="timestamp start">Created at: { types.DateTime.String(params.Created) } </p>
-            <p id={ "last-updated-" + params.Id } class="timestamp end">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>
+            <p class="timestamp">Created at: { types.DateTime.String(params.Created) } </p>
+            <p id={ "last-updated-" + params.Id } class="timestamp">Updated at: { types.DateTime.String(params.LastMessageTimestamp) } </p>
         </div>
 
         <div id={ "tags-" + params.Id } class="tags-container">

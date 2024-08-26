@@ -30,7 +30,7 @@ templ HumanMessage(message string) {
 templ UsefulnessButton(messageId string, useful bool) {
 	if useful {
 		<svg
-			class="useful-chat-icon"
+			class="useful-chat-icon icon-hover"
 			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
 			hx-trigger="click consume"
 			hx-target={ "#chat-usefulness-container-" + messageId }
@@ -40,7 +40,7 @@ templ UsefulnessButton(messageId string, useful bool) {
 		</svg>
 	} else {
 		<svg
-			class="useful-chat-icon"
+			class="useful-chat-icon icon-hover"
 			hx-post={ "http://127.0.0.1:8090/chat/useful/" + messageId }
 			hx-trigger="click consume"
 			hx-target={ "#chat-usefulness-container-" + messageId }
