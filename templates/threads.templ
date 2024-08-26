@@ -81,7 +81,6 @@ templ DeleteThreadMessage() {
 					height="24"
 					viewBox="0 0 24 24"
 					style="
-                        fill: rgba(0, 0, 0, 1);
                         transform:;
                         msfilter:;
                     "
@@ -132,7 +131,6 @@ templ ThreadListEntry(params ThreadListEntryParams, threadTags []TagParams, isNe
             height="24"
             viewBox="0 0 24 24"
             style="
-                fill: rgba(0, 0, 0, 1);
                 transform:;
                 msfilter:;
             "
@@ -186,7 +184,7 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
     <div class="chat-window" id="chat-window" hx-swap-oob="outerHTML">
         <div class="chat-title-header">
             <div class="chat-header-left">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
                 <p id="thread-title" class="thread-title">{ params.Id }</p>
             </div>
             <div
@@ -216,7 +214,7 @@ templ NewThreadListEntries(newThreadId string, threadParamsList []ThreadListEntr
     <div class="chat-window" id="chat-window" hx-swap-oob="outerHTML">
         <div class="chat-title-header">
             <div class="chat-header-left">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="transform: ;msFilter:;"><path d="M4 18h2v4.081L11.101 18H16c1.103 0 2-.897 2-2V8c0-1.103-.897-2-2-2H4c-1.103 0-2 .897-2 2v8c0 1.103.897 2 2 2z"></path><path d="M20 2H8c-1.103 0-2 .897-2 2h12c1.103 0 2 .897 2 2v8c1.103 0 2-.897 2-2V4c0-1.103-.897-2-2-2z"></path></svg>
                 <p id="thread-title" class="thread-title">{ newThreadId }</p>
             </div>
             <div

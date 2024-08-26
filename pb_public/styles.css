@@ -37,6 +37,7 @@
 }
 
 body {
+    color: var(--font-color);
     font-family: "Hack", "Lucida Console";
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
@@ -55,7 +56,13 @@ input,
 button,
 textarea,
 select {
+    color: var(--font-color);
     font: inherit;
+}
+
+::placeholder {
+  color: var(--font-color);
+  opacity: 0.6; 
 }
 
 button {
@@ -170,13 +177,15 @@ li {
 
 .menu-icon {
     border-radius: 5px;
-    transition 0.3s all;
+    transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .apis-icon {
     margin-left: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .apis-menu {
@@ -228,6 +237,7 @@ li {
     transition: 0.3s all;
     pointer-events: auto;
     margin-bottom: 0.25rem;
+    fill: var(--icon-color);
 }
 
 .delete-api-status {
@@ -261,12 +271,14 @@ li {
     margin-left: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .sort-icon {
     margin-right: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .sort-select {
@@ -303,11 +315,13 @@ li {
     margin-right: 1rem;
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .new-thread-icon {
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .chat-container {
@@ -383,6 +397,7 @@ li {
     border-radius: 5px;
     width: 20px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .chat-message-user {
@@ -476,6 +491,7 @@ li {
     width: 18px;
     border-radius: 5px;
     transition: 0.3s all;
+    fill: var(--icon-color);
 }
 
 .delete-thread-status {
@@ -737,7 +753,8 @@ li {
     justify-content: space-between;
     align-items: center;
     width: 100%;
-    font-size: 15px;
+    font-size: 14px;
+    margin-top: 0.25rem;
 }
 
 .theme-label {
