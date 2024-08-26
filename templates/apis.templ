@@ -7,19 +7,21 @@ type ApiParams struct {
     ApiKey string `db:"api_key" json:"api_key"`
 }
 
-templ SelectApiStatus(msg string) {
-    <p
-        class="select-api-status"
-        _="on load wait 2s transition opacity to 0 then remove me"
-    >
-        { msg }
-    </p>
+templ SelectApiStatus(msg string, updated bool) {
+    if (updated) {
+        <p
+            class="select-api-status"
+            _="on load wait 2s transition opacity to 0 then remove me"
+        >
+            { msg }
+        </p>
+    }
 }
 
 templ ApiSelect(selectedApiId string, paramsList []ApiParams) {
     <select
         hx-put="http://127.0.0.1:8090/api/select"
-        hx-trigger="change"
+        hx-trigger="click"
         hx-target="this"
         hx-swap="afterend"
         id="api-select"

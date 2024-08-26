@@ -110,12 +110,14 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 			// fetch selected model config
 			userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
 			if err != nil {
+				fmt.Printf("failed to fetch user config data: %v\n", err)
 				handleChatError(err, ws, htmxMsg.ThreadId, app)
 				continue
 			}
 
 			selectedApiRecord, err := app.Dao().FindRecordById("apis", userRecord.GetString("selected_api"))
 			if err != nil {
+				fmt.Printf("failed to fetch selected api record %v\n", err)
 				handleChatError(err, ws, htmxMsg.ThreadId, app)
 				continue
 			}
@@ -202,12 +204,6 @@ func OpenChatSocket(selectedModel *string, c echo.Context, app *pocketbase.Pocke
 					})
 				}
 			}
-
-			var settings []templates.SideBarMenuParams
-			app.Dao().DB().
-				Select("*").
-				From("settings").
-				All(&settings)
 
 			config := openai.DefaultConfig(selectedApiRecord.GetString("api_key"))
 			config.BaseURL = selectedApiRecord.GetString("url")

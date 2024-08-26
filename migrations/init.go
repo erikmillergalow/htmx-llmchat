@@ -12,7 +12,7 @@ import (
 func init() {
 	m.Register(func(db dbx.Builder) error {
 		jsonData := `
-<LeftMouse>[
+[
     {
         "id": "_pb_users_auth_",
         "name": "users",

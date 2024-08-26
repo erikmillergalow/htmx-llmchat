@@ -13,6 +13,7 @@
   "tauri": {
     "allowlist": {
       "shell": {
+        "open": true,
         "sidecar": true,
         "scope": [
           { 
@@ -70,10 +71,11 @@
     "windows": [
       {
         "fullscreen": false,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "title": "HTMXLLMChat",
-        "width": 800
+        "width": 1000,
+        "transparent": true
       }
     ]
   }

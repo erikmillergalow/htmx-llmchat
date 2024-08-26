@@ -207,6 +207,19 @@ func UpdateApi(id string, data map[string]any, c echo.Context, app *pocketbase.P
 	apiRecord.Set("url", data["url"].(string))
 	apiRecord.Set("api_key", data["api-key"].(string))
 
+	// set user selected api endpoint
+	// set selected model in users table
+	userRecord, err := app.Dao().FindFirstRecordByData("users", "username", "default")
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
+	}
+
+	userRecord.Set("selected_api", id)
+	userRecord.Set("selected_model_name", "")
+	if err := app.Dao().SaveRecord(userRecord); err != nil {
+		return c.String(http.StatusInternalServerError, "failed to update user record selected api")
+	}
+
 	if err := app.Dao().SaveRecord(apiRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update api record")
 	}
@@ -234,14 +247,20 @@ func SelectApi(id string, selectedModel *string, c echo.Context, app *pocketbase
 		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
 	}
 
+	updated := false
+	if userRecord.GetString("selected_api") != id {
+		c.Response().Header().Set("HX-Trigger", "refresh-models")
+		userRecord.Set("selected_model_name", "")
+		updated = true
+	}
+
 	userRecord.Set("selected_api", id)
-	userRecord.Set("selected_model_name", "")
 	if err := app.Dao().SaveRecord(userRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update user record selected api")
 	}
 
-	c.Response().Header().Set("HX-Trigger", "refresh-models")
-	SelectApiStatus := templates.SelectApiStatus("Now chatting using " + apiRecord.GetString("name"))
+	// c.Response().Header().Set("HX-Trigger", "refresh-models")
+	SelectApiStatus := templates.SelectApiStatus("Now chatting using " + apiRecord.GetString("name"), updated)
 	err = SelectApiStatus.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render select api status")
@@ -256,12 +275,17 @@ func SelectModel(selectedModel string, c echo.Context, app *pocketbase.PocketBas
 		return c.String(http.StatusInternalServerError, "failed to retrieve user record")
 	}
 
+	updated := false
+	if userRecord.GetString("selected_model_name") != selectedModel {
+		updated = true
+	}
+	
 	userRecord.Set("selected_model_name", selectedModel)
 	if err := app.Dao().SaveRecord(userRecord); err != nil {
 		return c.String(http.StatusInternalServerError, "failed to update user record selected api")
 	}
 
-	SelectApiStatus := templates.SelectApiStatus("Now chatting with " + selectedModel)
+	SelectApiStatus := templates.SelectApiStatus("Now chatting with " + selectedModel, updated)
 	err = SelectApiStatus.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render select model status")

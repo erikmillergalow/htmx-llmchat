@@ -104,7 +104,61 @@ templ LoadedThread(threadTitle string, messages []LoadedMessageParams) {
 }
 
 templ NoApisAvailable() {
-	<div class="initial-window" id="initial-window"></div>
+	<div class="initial-window" id="initial-window">
+		<h1 class="initial-title">Welcome to HTMXLLMChat</h1>
+
+		<p class="initial-text">
+			Click the &nbsp
+			<svg class="initial-svg" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: rgba(0, 0, 0, 1);transform: ;msFilter:;"><path d="M3 8h2v5c0 2.206 1.794 4 4 4h2v5h2v-5h2c2.206 0 4-1.794 4-4V8h2V6H3v2zm4-6h2v3H7zm8 0h2v3h-2z"></path></svg>
+			&nbsp icon to configure an API endpoint to get started. 
+		</p>
+		<br/>
+		<p>
+			Works with any OpenAI compatible API.
+		</p>
+
+		<h3 style="margin-top: 1rem; margin-bottom: 0.5rem">Recommendations:</h3>
+		<ul>
+			<li>
+				<b><a href="https://ollama.com" target="_blank" class="initial-link">Ollama:</a></b>
+				<ul>
+					<li>API endpoint: <code>http://localhost:11434/v1</code></li>
+					<li>API key: ollama</li>
+				</ul>
+			</li>
+			<li>
+				<b><a href="https://localai.io//" target="_blank" class="initial-link">LocalAI:</a></b>
+				<ul>
+					<li>API endpoint: <code>http://0.0.0.0:8080/v1</code></li>
+				</ul>
+			</li>
+			<li>
+				<b><a href="https://github.com/abetlen/llama-cpp-python" target="_blank" class="initial-link">llama-cpp-python:</a></b>
+				<ul>
+					<li>OpenAI compatible web server <a href="https://llama-cpp-python.readthedocs.io/en/latest/#openai-compatible-web-server" target="_blank" class="initial-link">python3 -m llama_cpp.server</a></li>
+					<li>Use --config_file <a href="https://llama-cpp-python.readthedocs.io/en/latest/server/#configuration-and-multi-model-support" target="_blank" class="initial-link">multi-model mode</a></li>
+					<li>API endpoint: <code>http://0.0.0.0:8080/v1</code></li>
+				</ul>
+			</li>
+			<li>
+				<b><a href="https://console.groq.com/login" target="_blank" class="initial-link">Groq:</a></b>
+				<ul>
+					<li>Free API access to hosted instances of Meta, Google, OpenAI, and Groq models.</li>
+					<li>Generate API key in <a href="https://console.groq.com/keys" target="_blank" class="initial-link">cloud console</a></li>
+					<li>API endpoint: <code>https://api.groq.com/openai/v1</code></li>
+				</ul>
+			</li>
+			<li>
+				<b><a href="https://platform.openai.com/signup" target="_blank" class="initial-link">OpenAI:</a></b>
+				<ul>
+					<li>Paid API access, large selection of models.</li>
+					<li>Create API in <a href="https://platform.openai.com/api-keys" target="_blank" class="initial-link">cloud console</a></li>
+					<li>API endpoint: <code>ihttps://api.openai.com/v1</code></li>
+				</ul>
+			</li>
+		</ul>
+
+	</div>
 }
 
 templ UsefulnessResponse(messageId string, useful bool) {	

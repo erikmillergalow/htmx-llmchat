@@ -19,6 +19,8 @@
     --status-response-color: #e6f0f0;
     --scrollbar-color: #666;
     --timestamp-color: #393939;
+    --active-graph-color: #b1c7ba;
+    --graph-background-color: #666;
 }
 
 @font-face {
@@ -123,6 +125,36 @@ li {
     background-color: var(--icon-hover-color);
 }
 
+.initial-window {
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    background-color: #b1b7bf;
+    height: 100%;
+    overflow: scroll;
+    scrollbar-color: var(--scrollbar-color) transparent;
+}
+
+.initial-title {
+    margin-bottom: 1rem;
+}
+
+.initial-link:visited {
+    color: rgb(0, 0, 238);
+}
+
+.initial-text {
+    font-size: 16px;
+    align-items: center;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.initial-svg {
+    display: inline-block;
+    vertical-align: middle;
+}
+
 .ui-container {
     display: flex;
     height: 100vh;
@@ -155,6 +187,24 @@ li {
     overflow: scroll;
     scrollbar-width: thin;
     scrollbar-color: var(--scrollbar-color) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 5px;  
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-color);
+  border-radius: 5px; 
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .side-bar-menu {
@@ -245,7 +295,7 @@ li {
     right: 0.5rem;
     background-color: var(--status-response-color); 
     padding: 0.75rem;
-    border-radius: 2rem;
+    border-radius: 5px;
     margin: 0.25rem;
     font-size: 14px;
 }
@@ -264,7 +314,7 @@ li {
     margin-top: 0.5rem;
     background-color: var(--status-response-color);
     padding: 0.75rem;
-    border-radius: 2rem;
+    border-radius: 5px;
 }
 
 .search-icon {
@@ -499,7 +549,7 @@ li {
     right: 0.5rem;
     background-color: var(--status-response-color);
     padding: 0.75rem;
-    border-radius: 2rem;
+    border-radius: 5px;
     margin: 0.25rem;
     font-size: 14px;
 }
@@ -739,7 +789,7 @@ li {
     right: 0.5rem;
     background-color: var(--status-response-color);
     padding: 0.75rem;
-    border-radius: 2rem;
+    border-radius: 5px;
 }
 
 .theme-config {
