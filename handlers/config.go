@@ -29,32 +29,6 @@ func OpenConfig(c echo.Context, app *pocketbase.PocketBase) error {
 	return nil
 }
 
-func SaveConfig(data map[string]any, c echo.Context, app *pocketbase.PocketBase) error {
-	// this should be associated with user accounts for server style setup
-	settingsRecord, err := app.Dao().FindFirstRecordByData("settings", "type", "keys")
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to fetch keys record")
-	}
-
-	openAIKey := data["openai-key"].(string)
-	groqKey := data["groq-key"].(string)
-
-	settingsRecord.Set("openai_key", openAIKey)
-	settingsRecord.Set("groq_key", groqKey)
-	if err = app.Dao().SaveRecord(settingsRecord); err != nil {
-		return c.String(http.StatusInternalServerError, "failed to save key settings")
-	}
-
-	c.Response().Writer.WriteHeader(200)
-	settingsUpdated := templates.SettingsUpdated()
-	err = settingsUpdated.Render(context.Background(), c.Response().Writer)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "failed to render settings update response")
-	}
-
-	return nil
-}
-
 func GetModelStats(c echo.Context, app *pocketbase.PocketBase) error {
 	var messages []templates.LoadedMessageParams
 	app.Dao().DB().

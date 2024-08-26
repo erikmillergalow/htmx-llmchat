@@ -198,11 +198,6 @@ func main() {
 		e.Router.GET("/stats", func(c echo.Context) error {
 			return handlers.GetModelStats(c, app)
 		})
-		// update config
-		e.Router.PUT("/config", func(c echo.Context) error {
-			data := apis.RequestInfo(c).Data
-			return handlers.SaveConfig(data, c, app)
-		})
 
 		e.Router.GET("/config/done", func(c echo.Context) error {
 			return handlers.GetThreadList("creation", c, app)
