@@ -34,8 +34,17 @@ jobs:
       - name: install templ
         run: go install github.com/a-h/templ/cmd/templ@latest
   
-      - name: Run templ
-        run: go run run_templ.go generate
+      - name: generate templ linux
+        if: matrix.platform == "ubuntu-22.04"
+        run: /home/runner/go/bin/templ generate
+
+      - name: generate templ mac
+        if: matrix.platform == "macos-latest"
+        run: /Users/runner/go/bin/templ generate
+
+      - name: generate templ windows
+        if: matrix.platform == "windows-latest"
+        run: C:\Users\runneradmin\go\bin\templ generate
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
