@@ -33,7 +33,11 @@ jobs:
 
       - name: install templ
         run: go install github.com/a-h/templ/cmd/templ@latest
-            
+
+      - name: setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+  
       - name: Run templ
         run: go run run_templ.go generate
 
