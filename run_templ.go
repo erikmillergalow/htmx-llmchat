@@ -8,10 +8,17 @@ import (
 )
 
 func main() {
-    gopath := os.Getenv("GOPATH")
-    if gopath == "" {
-        fmt.Println("GOPATH is not set")
-        os.Exit(1)
+    // gopath := os.Getenv("GOPATH")
+    // if gopath == "" {
+    //     fmt.Println("GOPATH is not set")
+    //     os.Exit(1)
+    // }
+
+    gopath := "/home/runner/go"
+    if os.Getenv("GOOS") == "windows" {
+        gopath = "C:\\Users\\runneradmin\\go"
+    } else if os.Getenv("GOOS") == "darwin" {
+        gopath = "/Users/runner/go"
     }
 
     templPath := filepath.Join(gopath, "bin", "templ")
