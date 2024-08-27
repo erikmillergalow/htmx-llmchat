@@ -33,7 +33,14 @@ jobs:
 
       - name: install templ
         run: go install github.com/a-h/templ/cmd/templ@latest
-            
+
+      - name: setup env
+        shell: bash
+        run: |
+          echo "GOPATH=${{ github.workspace }}/go" >> $GITHUB_ENV
+  
+      - name: Run templ
+        run: go run run_templ.go generate
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
@@ -59,9 +66,6 @@ jobs:
         uses: swatinem/rust-cache@v2
         with:
           workspaces: './src-tauri -> target'
-
-      - name: Run templ
-        run: go run ./helpers/run_templ.go generate
 
       - name: install frontend dependencies
         # If you don't have `beforeBuildCommand` configured you may want to build your frontend here too.
