@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "$(go env GOPATH)/bin/templ generate && go build -o ./src-tauri/binaries/main-aarch64-apple-darwin .",
+    "beforeBuildCommand": "$(go env GOPATH)/bin/templ generate && go build -o ./src-tauri/binaries/main-aarch64-apple-darwin . && go build -o ./src-tauri/binaries/x86_64-apple-darwin . && go build -o ./src-tauri/binaries/main-x86_64-unknown-linux-gnu .",
     "beforeDevCommand": "$(go env GOPATH)/bin/templ generate && go build -o ./src-tauri/binaries/main-aarch64-apple-darwin .",
     "devPath": "http://127.0.0.1:8090",
     "distDir": "../pb_public"
@@ -55,7 +55,7 @@
       },
       "resources": [],
       "shortDescription": "",
-      "targets": "all",
+      "targets": "appimage",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
