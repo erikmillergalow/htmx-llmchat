@@ -35,8 +35,9 @@ jobs:
         run: go install github.com/a-h/templ/cmd/templ@latest
 
       - name: setup env
+        shell: bash
         run: |
-          run: echo "GOPATH=${{ github.workspace }}/go" >> $GITHUB_ENV
+          echo "GOPATH=${{ github.workspace }}/go" >> $GITHUB_ENV
   
       - name: Run templ
         run: go run run_templ.go generate
