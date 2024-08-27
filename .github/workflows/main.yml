@@ -26,6 +26,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Go environment
+        uses: actions/setup-go@v5.0.2
+
+      - name: install templ
+        run: go install github.com/a-h/templ/cmd/templ@latest
+            
+
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04' # This must match the platform value defined above.
         run: |
