@@ -225,7 +225,7 @@ func UpdateApi(id string, data map[string]any, c echo.Context, app *pocketbase.P
 	}
 
 	c.Response().Header().Set("HX-Trigger", "refresh-apis")
-	apiUpdateResult := templates.ModelUpdateResult()
+	apiUpdateResult := templates.ApiUpdateResult()
 	err = apiUpdateResult.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render api update result")
@@ -306,7 +306,7 @@ func DeleteApi(modelId string, c echo.Context, app *pocketbase.PocketBase) error
 	}
 
 	c.Response().Writer.WriteHeader(200)
-	deletedApi := templates.DeletedModel()
+	deletedApi := templates.DeletedApi()
 	err = deletedApi.Render(context.Background(), c.Response().Writer)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "failed to render new api DB entry")

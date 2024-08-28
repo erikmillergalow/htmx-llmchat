@@ -157,12 +157,12 @@ templ ApiEditor(params ApiParams) {
     </form>
 }
 
-templ ModelUpdateResult() {
+templ ApiUpdateResult() {
     <p
         class="model-update-result"
         _="on load wait 2s transition opacity to 0 then remove me"
     >
-        Model updated!
+        API updated!
     </p>
 }
 
@@ -175,7 +175,7 @@ templ ApiEditorsList(paramsList []ApiParams) {
             hx-swap="none"
             class="create-model-button"
         >
-            Add new model
+            Add new API
         </button>
         <div id="api-editors-list">
             for _, params := range paramsList {
@@ -185,11 +185,11 @@ templ ApiEditorsList(paramsList []ApiParams) {
     </div>
 }
 
-templ DeletedModel() {
+templ DeletedApi() {
     <p
         class="delete-api-status"
         _="on load wait 2s transition opacity to 0 then remove me"
     >
-        Model deleted...
+        API deleted...
     </p>
 }

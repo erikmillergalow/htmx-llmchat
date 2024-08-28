@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"os"
+	"embed"
 
 	"github.com/erikmillergalow/htmx-llmchat/templates"
 	"github.com/erikmillergalow/htmx-llmchat/handlers"
@@ -21,8 +21,13 @@ var (
 	upgrader = websocket.Upgrader{}
 )
 
+//go:embed all:pb_public
+var publicDir embed.FS
+
 func main() {
 	app := pocketbase.New()
+
+	PublicDirFS := echo.MustSubFS(publicDir, "pb_public")
 
 	// handle initial DB setup on first launch
 	migratecmd.MustRegister(app, app.RootCmd, migratecmd.Config{Automigrate: true})
@@ -31,7 +36,7 @@ func main() {
 
 	app.OnBeforeServe().Add(func(e *core.ServeEvent) error {
 		// serve static files from public dir
-		e.Router.GET("/*", apis.StaticDirectoryHandler(os.DirFS("./pb_public"), false))
+		e.Router.GET("/*", apis.StaticDirectoryHandler(PublicDirFS, false))
 
 		var settings []templates.SideBarMenuParams
 		app.Dao().DB().
