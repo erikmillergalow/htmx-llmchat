@@ -5,6 +5,8 @@ use tauri::{
   api::process::{Command, CommandEvent},
   Manager,
 };
+use std::path::PathBuf;
+use std::sync::Arc;
 
 #[tauri::command]
 fn open_link(window: tauri::Window, url: String) -> Result<(), String> {
@@ -35,13 +37,15 @@ fn main() {
 
         std::fs::create_dir_all(&pb_data_path).expect("Failed to create data directory");
 
-        let pb_data_path_str = pb_data_path.to_str().expect("Invalid Unicode in path");
+        let pb_data_path_str = pb_data_path.to_string_lossy().into_owned();
 
+        let data_path_str = Arc::new(pb_data_path_str); 
 
         tauri::async_runtime::spawn(async move {
+            let pb_data_path = Arc::clone(&data_path_str);
             let (mut rx, mut _child) = Command::new_sidecar("main")
                 .expect("failed to setup main sidecar")
-                .args(["serve", --dir, pb_data_path_str])
+                .args(["serve", "--dir", &pb_data_path])
                 // .args(["serve", "-http='127.0.0.1:3000"])
                 .spawn()
                 .expect("failed to spawn packaged pocketbase");
