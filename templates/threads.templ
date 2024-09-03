@@ -204,6 +204,9 @@ templ NewThreadListEntry(params ThreadListEntryParams) {
 }
 
 templ NewThreadListEntries(newThreadId string, threadParamsList []ThreadListEntryParams, allTags [][]TagParams) {
+	
+	<input id="thread-id-chat" hx-swap-oob="outerHTML" name="thread-id-chat" type="hidden" value={ newThreadId }/>
+		
     for i, params := range threadParamsList {
         if i == 0 {
             @ThreadListEntry(params, allTags[i], true)
