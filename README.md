@@ -117,7 +117,6 @@ air
 
 // build binaries
 
-templ generate
 make all
 ```
 

@@ -19,6 +19,7 @@ $(TARGETS):
 	$(eval OS := $(word 1,$(subst -, ,$@)))
 	$(eval ARCH := $(word 2,$(subst -, ,$@)))
 	$(eval DIR_NAME := $(if $(filter darwin,$(OS)),mac,$(OS))-$(ARCH))
+	templ generate
 	mkdir -p $(BUILD_DIR)/$(BINARY_NAME)-$(DIR_NAME)
 	GOOS=$(OS) GOARCH=$(ARCH) go build -o $(BUILD_DIR)/$(BINARY_NAME)-$(DIR_NAME)/$(BINARY_NAME)$(if $(filter windows,$(OS)),.exe,)
 	cd $(BUILD_DIR) && zip -r $(BINARY_NAME)-$(DIR_NAME).zip $(BINARY_NAME)-$(DIR_NAME)
