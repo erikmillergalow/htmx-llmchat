@@ -28,10 +28,20 @@ fn main() {
             });
         "#).expect("Failed to inject JavaScript");
 
+
+        let pb_data_path: PathBuf = tauri::api::path::app_data_dir(&Default::default())
+            .expect("failed to resolve app data directory")
+            .join("htmx_llmchat_db");
+
+        std::fs::create_dir_all(&pb_data_path).expect("Failed to create data directory");
+
+        let pb_data_path_str = pb_data_path.to_str().expect("Invalid Unicode in path");
+
+
         tauri::async_runtime::spawn(async move {
             let (mut rx, mut _child) = Command::new_sidecar("main")
                 .expect("failed to setup main sidecar")
-                .args(["serve"])
+                .args(["serve", --dir, pb_data_path_str])
                 // .args(["serve", "-http='127.0.0.1:3000"])
                 .spawn()
                 .expect("failed to spawn packaged pocketbase");
